@@ -1,0 +1,31 @@
+{
+  "coefficients": {
+    "Cd": 0.07513,
+    "Cl": 0.38978,
+    "L_over_D": 5.188097,
+    "drag_N": 2.50545,
+    "lift_N": 12.998515
+  },
+  "files": {
+    "report": "report.txt",
+    "surface": "VTK/run_builtin3ft_lvl3_aoa4_yaw10_v20_0/boundary/body_fin.vtp",
+    "volume": null
+  },
+  "flight": {
+    "alt_m": 0.0,
+    "aoa_deg": 4.0,
+    "mach": 0.0588,
+    "reynolds": 213347,
+    "speed_m_s": 20.0,
+    "yaw_deg": 10.0
+  },
+  "geometry": "builtin3ft",
+  "profile": "plane",
+  "quality": {
+    "cells": 274279,
+    "iterations": 80,
+    "yplus_avg": null,
+    "yplus_pass": false
+  },
+  "status": "stopped"
+}

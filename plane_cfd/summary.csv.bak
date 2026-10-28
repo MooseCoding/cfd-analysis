@@ -1,0 +1,10 @@
+geometry,profile,status,aoa_deg,speed_m_s,mach,Cl,Cd,L_over_D,lift_N,drag_N,yplus_pass,iterations,cells,surface
+builtin3ft,plane,stopped,4.0,20.0,0.0588,0.405403,0.071073,5.704011,13.519508,2.370176,no,80,274279,
+cobra,plane,stopped,-4.0,20.0,0.0588,-0.184475,0.087673,-2.104138,-4.812849,2.287326,no,1000,679794,VTK/run_cobra_lvl4_aoa-4_v20_1000/boundary/body.vtp
+cobra,plane,stopped,-2.0,20.0,0.0588,0.011824,0.070155,0.168539,0.308479,1.830314,no,1000,679794,VTK/run_cobra_lvl4_aoa-2_v20_1000/boundary/body.vtp
+cobra,plane,stopped,0.0,20.0,0.0588,0.217252,0.064462,3.370229,5.667974,1.681777,no,1000,679794,VTK/run_cobra_lvl4_aoa0_v20_1000/boundary/body.vtp
+cobra,plane,stopped,2.0,20.0,0.0588,0.418689,0.06845,6.116682,10.923341,1.785828,no,1000,679794,VTK/run_cobra_lvl4_aoa2_v20_1000/boundary/body.vtp
+cobra,plane,stopped,4.0,20.0,0.0588,0.605176,0.080947,7.476157,15.788664,2.111869,no,1000,679794,VTK/run_cobra_lvl4_aoa4_v20_1000/boundary/body.vtp
+cobra,plane,stopped,6.0,20.0,0.0588,0.669061,0.106866,6.26076,17.455399,2.788064,no,1000,679794,VTK/run_cobra_lvl4_aoa6_v20_1000/boundary/body.vtp
+cobra,plane,stopped,8.0,20.0,0.0588,0.724723,0.138924,5.216691,18.907582,3.62444,no,1000,679794,VTK/run_cobra_lvl4_aoa8_v20_1000/boundary/body.vtp
+cobra,plane,stopped,10.0,20.0,0.0588,0.780632,0.175166,4.456521,20.36622,4.569982,no,1000,679794,VTK/run_cobra_lvl4_aoa10_v20_1000/boundary/body.vtp

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Troubleshooting</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<a class="brand" href="index.html">External-flow CFD</a>
+<nav>
+<a href="index.html">Guide</a>
+<a href="tutorial.html">Tutorial</a>
+<a href="concepts.html">Concepts</a>
+<a href="mesh.html">Mesh</a>
+<a href="troubleshooting.html" class="active">Troubleshoot</a>
+<a href="pipeline.html">Pipeline</a>
+<a href="api.html">API</a>
+</nav>
+</header>
+<div class="layout">
+<nav class="toc">
+<p class="toc-label">Contents</p>
+<a href="#units">Units</a>
+<a href="#missing-stl">Missing STL</a>
+<a href="#simplefoam-above-mach-03">simpleFoam above Mach 0.3</a>
+<a href="#the-solver-stopped">The solver stopped</a>
+<a href="#upwind-retry">Upwind retry</a>
+<a href="#y-is-outside-the-band">y+ is outside the band</a>
+<a href="#high-mach">High Mach</a>
+<a href="#stopping-with-ctrlc">Stopping with Ctrl+C</a>
+<a href="#partial-results">Partial results</a>
+<a href="#openfoam-is-not-on-path">OpenFOAM is not on PATH</a>
+</nav>
+<main>
+<h1 id="troubleshooting">Troubleshooting</h1>
+<p>Messages below are the ones the driver prints. The matching stage in the code is in the <a href="pipeline.html#from-config-to-report">pipeline</a>. Normal output is described in the <a href="tutorial.html#read-the-numbers">tutorial</a>.</p>
+<h2 id="units">Units</h2>
+<p><code>could not detect STL units</code> means the body profile found more than one of m, mm, cm, in, and ft that would put the longest side between 0.05 m and 20 m. Pass <code>-u</code> with the unit the file was written in.</p>
+<p>The plane profile instead picks the unit closest to a 3 ft span, among units that land between 0.2 m and 5 m. The rocket profile aims at <code>NOSE_L + BODY_L</code>, or at <code>TARGET_SIZE_M</code> when that is set. If the cleaned size in <code>--print</code> is off by a factor of 10 or 25.4, the unit is wrong. Set <code>-u</code> and run again. The mesh folder name will not match, so the old mesh is left unused.</p>
+<h2 id="missing-stl">Missing STL</h2>
+<p><code>profile body needs an STL</code> means <code>./foam.sh</code> had no <code>-s</code> and <code>config/body.conf</code> has an empty <code>STL</code>. The plane and rocket profiles can run with an empty <code>STL</code>; they build a shape.</p>
+<p><code>config not found</code> means <code>--config</code> did not resolve against the current directory or the repository root.</p>
+<p><code>every triangle in the STL was degenerate</code> means nothing survived cleanup. The file is empty or the coordinates collapsed when scaled.</p>
+<h2 id="simplefoam-above-mach-03">simpleFoam above Mach 0.3</h2>
+<p><code>simpleFoam is incompressible and is not valid above Mach 0.3</code> is raised when <code>SOLVER=simple</code> and the Mach number is above 0.3. Leave <code>SOLVER=auto</code>, or set <code>SOLVER=rho</code>. The thresholds are in <a href="concepts.html#mach-number-and-the-solver">Concepts</a>.</p>
+<h2 id="the-solver-stopped">The solver stopped</h2>
+<p><code>solver did not finish</code> means the log never reached <code>End</code> and the process was not a Ctrl+C. The last lines of <code>log.simpleFoam</code> or <code>log.rhoSimpleFoam</code> are printed above that message. Typical causes are a diverging field, a mesh <code>checkMesh</code> would already have complained about, or a shock the steady solver cannot hold.</p>
+<p><code>status</code> in <code>summary.json</code> is <code>stopped</code> when the iteration cap was reached without the residual targets. Raise <code>ITERS</code> or <code>-i</code>. The residual block in <code>report.txt</code> names the worst field and how many times its target it still is. A ratio below 1 meets the target.</p>
+<h2 id="upwind-retry">Upwind retry</h2>
+<p>If <code>limitedLinear</code> on the turbulence divergence does not finish, and the log already contains a time step, the driver renames that log to <code>log.&lt;solver&gt;.limitedLinear</code>, clears the solution, and runs once more with upwind. The warning is <code>limitedLinear on k/omega did not finish; retrying once with upwind</code>. <code>summary.json</code> and <code>report.txt</code> then show scheme <code>upwind</code>.</p>
+<p>A second failure stops. There is no third scheme.</p>
+<h2 id="y-is-outside-the-band">y+ is outside the band</h2>
+<p><code>report.txt</code> prints <code>y+ : NO</code> when an average is outside 30–300 or a minimum is below 11. With automatic quality and no layers, the driver may already have remeshed once. If it is still outside, the cell cap is probably holding the level down. Use <code>MAX_COMPUTE=heavy</code>, set a higher <code>CELLCAP</code>, or set <code>QUALITY</code> one step finer and accept the larger mesh. Prism layers are the other way to drop the first-cell y+.</p>
+<p><code>y+ : not written</code> means the <code>yPlus</code> function object produced no table. The solve may have stopped before a write.</p>
+<h2 id="high-mach">High Mach</h2>
+<p>At Mach 1 and above the flight-condition block warns that steady <code>rhoSimpleFoam</code> often will not settle a bow shock. The solve still starts. If it then hits the upwind retry and still fails, that warning is the reason. Lower the Mach number, or treat a non-converged <code>report.txt</code> as an unusable force. This package does not switch to an unsteady density-based solver.</p>
+<h2 id="stopping-with-ctrlc">Stopping with Ctrl+C</h2>
+<p>Without <code>-w</code>, the first Ctrl+C kills the solver and the driver exits with status 130. No <code>summary.json</code> is written.</p>
+<p>With <code>-w</code> (<code>WRITE_ON_EXIT=1</code>), the first Ctrl+C sets <code>stopAt writeNow</code>. The solver writes the current fields, the driver post-processes them, and <code>summary.json</code> has <code>status</code> <code>partial</code>. A second Ctrl+C kills the process.</p>
+<p>During <code>--aoas</code>, a failed angle is recorded and the sweep continues. Ctrl+C stops the whole sweep.</p>
+<h2 id="partial-results">Partial results</h2>
+<p><code>status</code> <code>partial</code> means the fields are from the last completed iteration. Cl and Cd are still means over the available window. <code>report.txt</code> starts with <code>PARTIAL RESULTS</code>. Those rows go to <code>results_partial.csv</code> and stay in <code>summaries.jsonl</code>. <code>read_results(folder, include_partial=False)</code> drops them.</p>
+<h2 id="openfoam-is-not-on-path">OpenFOAM is not on PATH</h2>
+<p><code>python3 -m cfd</code> and the shell wrappers look for <code>simpleFoam</code> on <code>PATH</code>, then for an <code>etc/bashrc</code>, then for Docker image <code>opencfd/openfoam-run:2512</code>. <code>OpenFOAM is not on PATH, and Docker is not available</code> means all three missed.</p>
+<p>Set <code>OPENFOAM_BASHRC</code> to the <code>etc/bashrc</code> you want, or install Docker Desktop and rerun. <code>CFD_FOAM_IMAGE</code> selects a different image.</p>
+<p><code>--print</code>, <code>--polar</code>, and <code>--help</code> do not start Docker. <code>--polar</code> only rebuilds <code>polar.csv</code> from runs already in the output folder. <code>run()</code> from Python does not search for OpenFOAM; the shell wrapper or <code>python3 -m cfd</code> does.</p>
+</main>
+</div>
+</body>
+</html>

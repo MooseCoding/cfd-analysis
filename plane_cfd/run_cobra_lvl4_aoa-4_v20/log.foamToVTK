@@ -1,0 +1,47 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2512                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _87ed40d256-20251219 OPENFOAM=2512 version=v2512
+Arch   : "LSB;label=32;scalar=64"
+Exec   : foamToVTK -latestTime
+Date   : Oct 28 2026
+Time   : 02:33:17
+Host   : MooseCodings-MacBook-Pro.local
+PID    : 90085
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+I/O    : uncollated
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+Case   : /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_cobra_lvl4_aoa-4_v20
+nProcs : 1
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+memory pool : not available
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Initial memory 0 kB
+Create mesh for time = 1000
+
+VTK mesh topology: 0.64 s, 0 kB
+Time: 1000
+    volScalar    : Cp k nut omega p yPlus
+    volVector    : U wallShearStress
+    Internal  : "VTK/run_cobra_lvl4_aoa-4_v20_1000/internal.vtu"
+    Boundary  : "VTK/run_cobra_lvl4_aoa-4_v20_1000/boundary/farfield.vtp"
+    Boundary  : "VTK/run_cobra_lvl4_aoa-4_v20_1000/boundary/body.vtp"
+Wrote in 1.08 s, 0 kB
+
+End: 1.72 s, 0 kB (peak)
+

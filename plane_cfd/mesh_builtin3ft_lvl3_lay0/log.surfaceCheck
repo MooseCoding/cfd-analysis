@@ -1,0 +1,104 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2512                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _87ed40d256-20251219 OPENFOAM=2512 version=v2512
+Arch   : "LSB;label=32;scalar=64"
+Exec   : surfaceCheck constant/triSurface/body.stl
+Date   : Oct 24 2026
+Time   : 02:23:56
+Host   : MooseCodings-MacBook-Pro.local
+PID    : 86461
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+I/O    : uncollated
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+Case   : /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/mesh_builtin3ft_lvl3_lay0
+nProcs : 1
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+memory pool : not available
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Reading surface from "constant/triSurface/body.stl" ...
+
+Statistics:
+Triangles    : 6602 in 4 region(s)
+Vertices     : 3309
+Bounding Box : (0 -0.4572 -0.045) (0.7 0.4572 0.13)
+
+Index	Region	Size
+-----	------	----
+0	fuselage	2368
+1	wing	1898
+2	htail	1314
+3	fin	1022
+
+
+Surface has no illegal triangles.
+
+Triangle quality (equilateral=1, collapsed=0):
+    0 .. 0.05  : 0.171766
+    0.05 .. 0.1  : 0.14541
+    0.1 .. 0.15  : 0.189942
+    0.15 .. 0.2  : 0.108906
+    0.2 .. 0.25  : 0.0443805
+    0.25 .. 0.3  : 0.049379
+    0.3 .. 0.35  : 0.0187822
+    0.35 .. 0.4  : 0.0157528
+    0.4 .. 0.45  : 0.0193881
+    0.45 .. 0.5  : 0.0339291
+    0.5 .. 0.55  : 0.155105
+    0.55 .. 0.6  : 0.0454408
+    0.6 .. 0.65  : 0
+    0.65 .. 0.7  : 0
+    0.7 .. 0.75  : 0
+    0.75 .. 0.8  : 0
+    0.8 .. 0.85  : 0.000302939
+    0.85 .. 0.9  : 0
+    0.9 .. 0.95  : 0.00151469
+    0.95 .. 1  : 0
+
+    min 5.58085e-06 for triangle 4157
+    max 0.912931 for triangle 4174
+
+Edges:
+    min 0.000133923 for edge 9643 points (0.67 -0.000178303 0.13)(0.669867 -0.000192047 0.13)
+    max 0.0770839 for edge 4793 points (0.376842 0 0.00751488)(0.365213 -0.0762 0.00800251)
+
+Checking for points less than 1e-6 of bounding box ((0.7 0.9144 0.175) metre) apart.
+Found 0 nearby points.
+
+Surface is closed. All edges connected to two faces.
+
+Number of unconnected parts : 4
+Splitting surface into parts ...
+
+Wrote zoning to "constant/triSurface/body.vtp"
+
+writing part 0 size 2368 to "constant/triSurface/body_0.obj"
+writing part 1 size 1898 to "constant/triSurface/body_1.obj"
+writing part 2 size 1314 to "constant/triSurface/body_2.obj"
+writing part 3 size 1022 to "constant/triSurface/body_3.obj"
+
+Number of zones (connected area with consistent normal) : 4
+More than one normal orientation.
+Wrote zoning to "constant/triSurface/body.vtp"
+
+writing part 0 size 2368 to "constant/triSurface/body_normal_0.obj"
+writing part 1 size 1898 to "constant/triSurface/body_normal_1.obj"
+writing part 2 size 1314 to "constant/triSurface/body_normal_2.obj"
+writing part 3 size 1022 to "constant/triSurface/body_normal_3.obj"
+
+
+End
+

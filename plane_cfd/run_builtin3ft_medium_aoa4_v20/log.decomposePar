@@ -1,0 +1,30 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2512                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _87ed40d256-20251219 OPENFOAM=2512 version=v2512
+Arch   : "LSB;label=32;scalar=64"
+Exec   : decomposePar -force
+Date   : Oct 23 2026
+Time   : 12:55:01
+Host   : MooseCodings-MacBook-Pro.local
+PID    : 14678
+I/O    : uncollated
+Case   : /Users/moosecoding/school/gatech/Freshman/supersonic/cobra/CFD/openfoam/plane_cfd/run_builtin3ft_medium_aoa4_v20
+nProcs : 1
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+memory pool : not available
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+
+
+Decomposing mesh
+
+Create mesh

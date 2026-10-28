@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>External-flow CFD</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<a class="brand" href="index.html">External-flow CFD</a>
+<nav>
+<a href="index.html" class="active">Guide</a>
+<a href="tutorial.html">Tutorial</a>
+<a href="concepts.html">Concepts</a>
+<a href="mesh.html">Mesh</a>
+<a href="troubleshooting.html">Troubleshoot</a>
+<a href="pipeline.html">Pipeline</a>
+<a href="api.html">API</a>
+</nav>
+</header>
+<div class="layout">
+<nav class="toc">
+<p class="toc-label">Contents</p>
+<a href="#documentation-site">Documentation site</a>
+<a href="#requirements">Requirements</a>
+<a href="#quick-start">Quick start</a>
+<a href="#compute-budget">Compute budget</a>
+<a href="#profiles">Profiles</a>
+<a href="#solver">Solver</a>
+<a href="#where-the-code-is">Where the code is</a>
+<a href="#python-api">Python API</a>
+<a href="#output">Output</a>
+<a href="#stopping-a-run">Stopping a run</a>
+<a href="#analyzing-results-in-paraview">Analyzing results in ParaView</a>
+<a class="sub" href="#open-the-case">Open the case</a>
+<a class="sub" href="#slices-through-the-flow">Slices through the flow</a>
+<a class="sub" href="#fields-to-look-at">Fields to look at</a>
+<a class="sub" href="#paraview-filters-quick-reference">ParaView filters (quick reference)</a>
+<a class="sub" href="#paraview-tips">ParaView tips</a>
+<a href="#limits">Limits</a>
+<a href="#command-line-flags">Command-line flags</a>
+</nav>
+<main>
+<h1 id="external-flow-cfd">External-flow CFD</h1>
+<p>One command builds a mesh and runs steady k-ω SST over a plane, a rocket, or any single watertight body. Numbers you change per run live in a config file. The driver is a small Python package, so the dictionaries and the geometry are ordinary modules.</p>
+<p>Below Mach 0.3 the solver is incompressible <code>simpleFoam</code>. Above that it switches to compressible <code>rhoSimpleFoam</code>, and turns <code>transonic</code> on from Mach 0.7.</p>
+<h2 id="documentation-site">Documentation site</h2>
+<p><code>./docs.sh</code> serves this guide and the rest of the local docs at <a href="http://127.0.0.1:8765/">http://127.0.0.1:8765/</a>. <code>./docs.sh --build</code> only writes <code>site/out/</code>. Neither command meshes or solves.</p>
+<div class="table-wrap"><table><thead><tr><th>Page</th><th>What it covers</th></tr></thead><tbody><tr><td><a href="tutorial.html">Tutorial</a></td><td><code>--print</code>, a smoke run, the files to read, a rocket, an STL</td></tr><tr><td><a href="concepts.html">Concepts</a></td><td>Axes, ISA, Mach, coefficients, CA / CN, y+, scatter</td></tr><tr><td><a href="mesh.html">Mesh</a></td><td>Domain, levels, wake boxes, layers, reuse</td></tr><tr><td><a href="troubleshooting.html">Troubleshooting</a></td><td>Units, divergence, y+, Ctrl+C, Docker</td></tr><tr><td><a href="pipeline.html">Pipeline</a></td><td>Which file owns each step</td></tr><tr><td><a href="api.html">API</a></td><td><code>make_config</code>, <code>plan</code>, <code>run</code>, <code>sweep</code>, result files</td></tr></tbody></table></div>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li><code>python3</code> (stdlib only)</li>
+<li>OpenFOAM.com v2512 for a real solve (v2012+ should work). <code>python3 -m cfd</code> and the shell wrappers find it:
+<ol>
+<li><code>simpleFoam</code> already on <code>PATH</code></li>
+<li>otherwise the first <code>etc/bashrc</code> from <code>OPENFOAM_BASHRC</code>, <code>$WM_PROJECT_DIR</code>, <code>$FOAM_INST_DIR</code>, <code>/Volumes/OpenFOAM-*</code>, <code>~/OpenFOAM/*</code>, <code>/opt/openfoam*</code>, or <code>/usr/lib/openfoam/*</code></li>
+<li>otherwise Docker image <code>opencfd/openfoam-run:2512</code> (install Docker Desktop on macOS, Linux, or Windows)</li>
+</ol></li>
+</ul>
+<p><code>./plane-foam.sh --print</code>, <code>plan()</code>, and <code>python3 -m unittest tests.test_cfd</code> do not need OpenFOAM or Docker.</p>
+<p>On Windows, from this folder: <code>py -3 -m cfd --config config/plane.conf --smoke</code> with Docker Desktop running.</p>
+<p><code>mpirun</code> is used when <code>NPROCS</code> is greater than 1. Set <code>CFD_FOAM_IMAGE</code> to pin a different OpenFOAM image.</p>
+<h2 id="quick-start">Quick start</h2>
+<pre><code>./plane-foam.sh --smoke          # coarse mesh, 80 iterations, 1 core
+./plane-foam.sh --print          # flight condition and reference, no mesh
+./plane-foam.sh                  # built-in 3 ft plane, 4 deg, 20 m/s
+./rocket-foam.sh                 # example rocket, 0 deg, 30 m/s
+./foam.sh -s model.stl -u m      # any other body</code></pre>
+<p>Open <code>summary.json</code> in the run folder (or <code>summary.csv</code> in the output folder). <code>./view-case.sh plane_cfd/run_&lt;...&gt;</code> opens the wall surface in ParaView.</p>
+<p><code>--smoke</code> (or <code>SMOKE=1</code>) forces <code>QUALITY=coarse</code>, <code>ITERS=80</code>, <code>NPROCS=1</code>, and <code>LAYERS=0</code>. The <code>MAX_COMPUTE</code> cell cap still applies. A run without <code>--smoke</code> is unchanged.</p>
+<p><code>./plane-foam.sh -a 6 -v 18</code> still overrides the config for one run. A mesh is reused when the geometry, level, and layer count are unchanged.</p>
+<p>Edit the case in <code>config/plane.conf</code>, <code>config/rocket.conf</code>, or <code>config/body.conf</code>. Each line is <code>KEY=value</code> with a comment. Common solver keys: <code>ITERS</code> (max SIMPLE iterations, default 2000), <code>SOLVER</code>, <code>TURB_INT</code>, <code>NPROCS</code>, <code>MAX_COMPUTE</code>. Resolved order:</p>
+<ol>
+<li>The config file.</li>
+<li>Environment variables that are already set (<code>SPEED=15 ./plane-foam.sh</code>).</li>
+<li>CLI flags.</li>
+</ol>
+<p><code>./plane-foam.sh --config other.conf</code> uses that file instead of <code>config/plane.conf</code>.</p>
+<h2 id="compute-budget">Compute budget</h2>
+<p><code>MAX_COMPUTE</code> (alias <code>COMPUTE</code>) picks how much mesh and parallelism a run may use. Shipped configs default to <code>medium</code>. Override with <code>--max-compute</code>, <code>MAX_COMPUTE=light ./plane-foam.sh</code>, or <code>make_config(..., max_compute=&quot;light&quot;)</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>Level</th><th>Estimated cell cap</th><th>MPI ranks</th></tr></thead><tbody><tr><td><code>light</code></td><td>1M</td><td>2</td></tr><tr><td><code>medium</code></td><td>4M</td><td>all cores</td></tr><tr><td><code>heavy</code></td><td>16M</td><td>all cores</td></tr></tbody></table></div>
+<p>Set <code>CELLCAP</code> or <code>NPROCS</code> explicitly (config, environment, or <code>-n</code>) to override the preset for that quantity only.</p>
+<h2 id="profiles">Profiles</h2>
+<p>Coordinates are the same for all three: <strong>+x</strong> nose to tail, <strong>+y</strong> to the side, <strong>+z</strong> up. Freestream is +x before angle of attack. The snappy surface is named <code>body</code>, so patches are <code>body</code> and <code>body_&lt;solid&gt;</code>.</p>
+<p><strong>Plane.</strong> Built-in RC plane, or an STL. Reference is wing area, mean aerodynamic chord, and the quarter-chord. The report is Cl, Cd, moments, L/D, and a spanwise load. A solid whose name contains <code>wing</code> (and not <code>tail</code>) is the main wing. Unit auto-detect still aims at about 3 ft.</p>
+<p><strong>Rocket.</strong> Built-in ogive, tube, and fins, or an STL. The built-in shape is an example (4 in diameter, about 1 m long, four fins), not a Cobra model. Change <code>BODY_D</code>, <code>BODY_L</code>, <code>NOSE</code>, and the <code>FIN_*</code> keys in <code>config/rocket.conf</code>.</p>
+<p>Reference area is the body cross-section, <code>pi D^2 / 4</code>. Diameter comes from the longest constant-radius tube, so the fins do not set it. Named solids <code>nose</code>, <code>tube</code>, or <code>body</code> are preferred. <code>Lref</code> defaults to the diameter. The moment center defaults to mid-length; set <code>REF_X</code> to the real CG or the static margin is not about the mass center.</p>
+<p>The report adds:</p>
+<ul>
+<li><code>CA = Cd cos α − Cl sin α</code> and <code>CN = Cd sin α + Cl cos α</code> (+x aft, +z up)</li>
+<li><code>x_cp = x_cg − Cm Lref / CN</code></li>
+<li>static margin <code>(x_cp − x_cg) / D</code> in calibers. Positive means the center of pressure is aft of the moment center.</li>
+<li><code>axial_load.csv</code> along x</li>
+</ul>
+<p><strong>Body.</strong> An STL is required. Reference area is the frontal projection, length is the extent along x, and the moment center is the box center unless you override it. The report is Fx, Fy, Fz plus Cl and Cd. If <code>-u</code> is omitted and more than one unit is plausible, the run stops and asks for <code>-u</code>.</p>
+<p><code>-A</code>, <code>-C</code>, <code>-X</code>, and <code>-Z</code> override area, length, and the moment center on every profile. <code>-C</code> is the MAC for a plane and <code>Lref</code> for a rocket or a body.</p>
+<h2 id="solver">Solver</h2>
+<p>Mach uses the freestream speed and the ISA atmosphere. <code>ALT_M</code> is sea level by default and can go up to 11 km.</p>
+<div class="table-wrap"><table><thead><tr><th>Mach</th><th>Solver</th></tr></thead><tbody><tr><td>≤ 0.3</td><td><code>simpleFoam</code>, kinematic pressure, wall functions, one y+ remesh</td></tr><tr><td>&gt; 0.3</td><td><code>rhoSimpleFoam</code>, perfect gas, Sutherland viscosity, absolute p and T</td></tr><tr><td>≥ 0.7</td><td>same compressible solver with <code>transonic yes</code></td></tr></tbody></table></div>
+<p><code>SOLVER=simple</code> above Mach 0.3 is an error. <code>SOLVER=rho</code> forces the compressible solver. Coefficients use freestream dynamic pressure either way. Incompressible <code>Cp = p / (½ U²)</code>. Compressible <code>Cp = (p − p∞) / (½ ρ∞ U²)</code>.</p>
+<p>There is no <code>rhoCentralFoam</code> mode. That solver is unsteady and CFL-limited, so it does not fit this residual loop. A strong bow shock can still fail to settle; the run retries the turbulence scheme once with upwind and then stops with the log.</p>
+<h2 id="where-the-code-is">Where the code is</h2>
+<div class="table-wrap"><table><thead><tr><th>File</th><th>What you change it for</th></tr></thead><tbody><tr><td><code>config/*.conf</code></td><td>Speed, angle, altitude, rocket size, mesh, output folder</td></tr><tr><td><code>cfd/geom.py</code></td><td>Built-in shapes, STL cleanup, reference area</td></tr><tr><td><code>cfd/case.py</code></td><td>Boundary conditions, schemes, force function objects</td></tr><tr><td><code>cfd/mesh.py</code></td><td><code>blockMesh</code> / <code>snappyHexMesh</code></td></tr><tr><td><code>cfd/solve.py</code></td><td>MPI, Ctrl+C, the upwind retry</td></tr><tr><td><code>cfd/report.py</code></td><td><code>summary.json</code>, <code>report.txt</code>, and <code>results.csv</code></td></tr><tr><td><code>cfd/env.py</code></td><td>Local OpenFOAM discovery and the Docker re-exec</td></tr><tr><td><code>cfd/aero.py</code></td><td>ISA air, Mach switch, CA / CN / center of pressure</td></tr><tr><td><a href="api.html">API.md</a></td><td>Python API: <code>make_config</code>, <code>plan</code>, <code>run</code>, result files</td></tr></tbody></table></div>
+<p><code>./plane-foam.sh</code> and <code>./rocket-foam.sh</code> only exec <code>python3 -m cfd</code>.</p>
+<p>Checks that do not need OpenFOAM:</p>
+<pre><code>python3 -m unittest tests.test_cfd</code></pre>
+<h2 id="python-api">Python API</h2>
+<p>The full reference is <a href="api.html">API.md</a>: configuration fields, <code>plan</code> / <code>run</code> / <code>RunResult</code>, CSV columns, <code>case_meta.env</code>, and the helper modules.</p>
+<p>Import from the <code>cfd</code> package (set <code>PYTHONPATH</code> to this repo root, same as the shell wrappers):</p>
+<pre><code>from cfd import make_config, plan, run
+
+cfg = make_config(&quot;config/plane.conf&quot;, speed=22.0, max_iterations=3000)
+# same as iters=3000; cfg.iters and cfg.max_iterations are equivalent
+
+preview = plan(cfg)          # no OpenFOAM; includes preview[&quot;max_iterations&quot;]
+result = run(cfg)            # full mesh + solve + report
+row = result.coefficients    # Cl, Cd, L_over_D, lift_N, drag_N from summary.json</code></pre>
+<p><code>from_mapping</code> is the same as <code>make_config</code>. <code>read_run</code>, <code>read_results</code>, and <code>list_runs</code> load existing output folders. <code>run()</code> uses OpenFOAM already on <code>PATH</code>. The shell wrappers and <code>python3 -m cfd</code> are what search for an install or start Docker.</p>
+<h2 id="output">Output</h2>
+<div class="table-wrap"><table><thead><tr><th>Profile</th><th>Default folder</th></tr></thead><tbody><tr><td>plane</td><td><code>plane_cfd</code> under the repo (<code>cfd.config.REPO_ROOT</code>)</td></tr><tr><td>rocket</td><td><code>rocket_cfd</code> under the repo</td></tr><tr><td>body</td><td><code>body_cfd</code> under the repo</td></tr></tbody></table></div>
+<p><code>geom_&lt;name&gt;/</code> holds the cleaned <code>body.stl</code>. <code>mesh_&lt;name&gt;_lvl&lt;L&gt;_lay&lt;N&gt;/</code> is reused after <code>checkMesh</code> says Mesh OK. A built-in rocket name includes a short hash of the shape, so editing the rocket config starts a new mesh. <code>run_&lt;name&gt;_lvl&lt;L&gt;_aoa&lt;A&gt;_v&lt;V&gt;/</code> is the case (<code>_h&lt;alt&gt;</code> is added when altitude is not zero). Old meshes that still contain <code>plane.stl</code> are not reused.</p>
+<p>Each run folder gets <code>summary.json</code>: flight condition, Cl, Cd, L/D, forces, y+, status (<code>converged</code>, <code>stopped</code>, or <code>partial</code>), and the relative path of the wall VTK. Rocket CA, CN, center of pressure, and static margin are under <code>rocket</code> and are omitted for a plane or a body. The output folder appends the same object to <code>summaries.jsonl</code> and a short <code>summary.csv</code> (<code>geometry, profile, status, aoa_deg, speed_m_s, mach, Cl, Cd, L_over_D, lift_N, drag_N, yplus_pass, iterations, cells, surface</code>). <code>read_results</code> loads the JSONL. The terminal prints those few lines; mesh and residual detail stays in <code>report.txt</code>.</p>
+<p><code>results.csv</code> is still appended for older scripts. It has one wide row per finished run, including <code>profile</code>, <code>solver</code>, <code>alt_m</code>, <code>max_iterations</code>, <code>iter_budget_pct</code>, residual columns, and, for a rocket, <code>CA</code>, <code>CN</code>, <code>x_cp_m</code>, and <code>static_margin</code>. σ on Cl and Cd is the scatter over the converged iterations, not a grid uncertainty. Partial runs (<code>results_partial.csv</code>) use the same wide columns.</p>
+<p>Each run folder also gets <code>history.csv</code> and <code>history.svg</code>: residuals and Cl, Cd at every iteration. An angle sweep writes <code>polar.csv</code> and <code>polar.svg</code> in the output folder. <code>--polar</code> rebuilds those two files from <code>summaries.jsonl</code> and does not solve.</p>
+<h2 id="stopping-a-run">Stopping a run</h2>
+<ul>
+<li>Without <code>-w</code>, Ctrl+C stops the solver and keeps nothing.</li>
+<li>With <code>-w</code>, the first Ctrl+C asks for <code>writeNow</code> and post-processes a partial result. A second Ctrl+C kills it.</li>
+</ul>
+<h2 id="analyzing-results-in-paraview">Analyzing results in ParaView</h2>
+<p>When a run finishes (or you stop with <code>-w</code>), the driver reconstructs decomposed time directories if needed, runs <code>foamToVTK -latestTime</code>, and writes <code>summary.json</code> plus <code>report.txt</code>. The wall patches stay. <code>internal.vtu</code> is deleted unless you pass <code>--volume</code> or <code>VOLUME=1</code>. With <code>--results-only</code> or <code>RESULTS_ONLY=1</code>, VTK is skipped and the run folder is trimmed to <code>summary.json</code>, <code>report.txt</code>, <code>results.csv</code>, <code>case_meta.env</code>, optional bin CSVs, and solver logs.</p>
+<div class="table-wrap"><table><thead><tr><th>Path</th><th>What it is</th></tr></thead><tbody><tr><td><code>run_&lt;...&gt;/summary.json</code></td><td>The numbers and the surface path</td></tr><tr><td><code>run_&lt;...&gt;/VTK/*.vtm</code></td><td>Multiblock export: volume + boundary patches (when VTK was written)</td></tr><tr><td><code>run_&lt;...&gt;/VTK/.../internal.vtu</code></td><td>Volume mesh and fields (<code>U</code>, <code>p</code>, <code>k</code>, …). Kept only with <code>--volume</code></td></tr><tr><td><code>run_&lt;...&gt;/VTK/.../boundary/*.vtp</code></td><td>Wall surface (Cp, p, yPlus)</td></tr><tr><td><code>run_&lt;...&gt;/postProcessing/</code></td><td>Force bins, <code>yPlus</code>, <code>wallShearStress</code>, etc.</td></tr></tbody></table></div>
+<h3 id="open-the-case">Open the case</h3>
+<pre><code>./plane-foam.sh -p                    # solve, then open the wall surface
+./view-case.sh plane_cfd/run_&lt;...&gt;    # same surface, from summary.json
+paraview plane_cfd/run_&lt;...&gt;/VTK/*.vtm   # volume + body (after --volume)</code></pre>
+<p><code>summary.json</code> → <code>files.surface</code> is the wall path (<code>plane.vtp</code> or <code>body.vtp</code>, not <code>farfield.vtp</code>). With <code>--volume</code>, <code>files.volume</code> is the relative path to <code>internal.vtu</code>. <code>./view-case.sh</code> and <code>-p</code> open the wall only.</p>
+<p>For slices, streamlines, and other volume views, pass <strong><code>--volume</code></strong> (or <code>VOLUME=1</code>) <strong>before</strong> the solve so <code>internal.vtu</code> is not deleted after <code>foamToVTK</code>. Prefer the <strong><code>.vtm</code></strong> next to the <code>VTK/</code> subfolder: it loads the internal volume and the boundary patches together. <code>--results-only</code> skips VTK entirely.</p>
+<p>If a run finished without <code>--volume</code>, regenerate VTK from the run folder (OpenFOAM on <code>PATH</code>):</p>
+<pre><code>cd plane_cfd/run_&lt;...&gt;
+reconstructPar -latestTime    # only when processor* folders exist
+foamToVTK -latestTime</code></pre>
+<p>The driver deletes <code>internal.vtu</code> after export by default; copy it out before re-post-processing if you need it without solving again.</p>
+<h3 id="slices-through-the-flow">Slices through the flow</h3>
+<ol>
+<li>Open <code>files.volume</code>, <code>internal.vtu</code>, or the <code>.vtm</code> (select the <strong>internal</strong> block for filters).</li>
+<li><strong>Filters → Slice</strong> (or <strong>Clip</strong> to keep one side of the domain).</li>
+<li>Set <strong>Plane</strong> <strong>Normal</strong> and <strong>Origin</strong>. Coordinates: <strong>+x</strong> nose to tail, <strong>+y</strong> to the side, <strong>+z</strong> up; freestream is +x before AoA (solved <strong>U</strong> includes AoA).</li>
+</ol>
+<div class="table-wrap"><table><thead><tr><th>View</th><th>Normal</th><th>Origin (starting point)</th></tr></thead><tbody><tr><td>Side (flow in the plane)</td><td><code>(0, 1, 0)</code></td><td>Mid-body <strong>x</strong>, <strong>y = 0</strong></td></tr><tr><td>Top / symmetry</td><td><code>(0, 0, 1)</code></td><td><strong>y = 0</strong> on a symmetric body</td></tr><tr><td>Streamwise station</td><td><code>(1, 0, 0)</code></td><td><strong>x</strong> at the station you want</td></tr></tbody></table></div>
+<ol start="4">
+<li>Color by <strong><code>|U|</code></strong>, <strong>U</strong>, <strong>p</strong>, or <strong>Cp</strong> (transonic: centerline slice, e.g. normal <strong>+y</strong> through <strong>y = 0</strong>, for shocks and expansions).</li>
+<li>Optional: <strong>Glyph</strong> on the slice (vectors <strong>U</strong>) or use <strong>Stream Tracer</strong> (below).</li>
+</ol>
+<h3 id="fields-to-look-at">Fields to look at</h3>
+<p><strong>Pressure coefficient.</strong> The solver writes a <code>Cp</code> field at each write time. In ParaView, color the wall patch by <strong>Cp</strong>. If <code>Cp</code> is missing (see the warning at the end of the run), color by <strong>p</strong> and rescale:</p>
+<ul>
+<li>Incompressible (<code>simpleFoam</code>): <code>Cp = p / (½ U²)</code> with <code>U</code> = freestream speed from the config.</li>
+<li>Compressible (<code>rhoSimpleFoam</code>): <code>p</code> is absolute static pressure; <code>Cp = (p − p∞) / (½ ρ∞ U²)</code> with <code>p∞</code> and <code>ρ∞</code> from the run’s altitude (also in <code>report.txt</code>).</li>
+</ul>
+<p><strong>Flow structure (slices and cuts).</strong> See <a href="#slices-through-the-flow">Slices through the flow</a> above.</p>
+<p><strong>Streamlines.</strong> Streamlines need the volume VTK, not the wall <code>.vtp</code> alone.</p>
+<ol>
+<li>Open the <code>.vtm</code> (or <code>internal.vtu</code>).</li>
+<li>Select the <strong>internal</strong> block if you used a <code>.vtm</code>.</li>
+<li><strong>Filters → Stream Tracer</strong> (or <strong>Stream Tracer With Custom Source</strong>). Set <strong>Vectors</strong> to <strong>U</strong>.</li>
+<li>Seed <strong>upstream</strong> of the body in the freestream (e.g. a <strong>Line</strong> or <strong>Point Source</strong> at large +x, outside the model). If no lines appear, move the seeds out of the solid or use <strong>Clip</strong> to keep only fluid cells before tracing.</li>
+<li>Color lines by <strong>|U|</strong> or <strong>p</strong>. Optional: <strong>Tube</strong> on the tracer output for thickness; <strong>Glyph</strong> on a slice gives sparse arrows.</li>
+</ol>
+<p>Large meshes: <strong>Clip</strong> or <strong>Extract Subset</strong> to a box around the vehicle before <strong>Stream Tracer</strong> so ParaView stays responsive.</p>
+<p><strong>Wall resolution.</strong> <code>yPlus</code> and <code>wallShearStress</code> are written on wall patches at write time. Color the body surface by <strong>yPlus</strong> to check that averages sit in the wall-function band (about 30–300; minimum at least 11). Values also appear in <code>report.txt</code> and under <code>postProcessing/yPlus1/</code> and <code>postProcessing/wallShear1/</code>.</p>
+<p><strong>Aerodynamic loads (outside ParaView).</strong> Open <code>summary.json</code> or <code>summary.csv</code>. <code>report.txt</code> still has the long write-up: coefficients are <strong>mean ± sample std dev</strong> over the converged iteration window by default, and the wide <code>results.csv</code> stores the mean (<code>Cl</code>, <code>Cd</code>, …) and std dev (<code>sigma_*</code>) in separate columns. Pass <code>--no-scatter</code> or <code>REPORT_SCATTER=0</code> to omit the ± scatter (means only; <code>sigma_*</code> columns stay in the wide CSV header but are left blank). Plane spanwise load and rocket axial load are exported as CSV when binning succeeded (<code>spanwise_cl.csv</code>, <code>axial_load.csv</code>).</p>
+<h3 id="paraview-filters-quick-reference">ParaView filters (quick reference)</h3>
+<div class="table-wrap"><table><thead><tr><th>Goal</th><th>Filter</th><th>Notes</th></tr></thead><tbody><tr><td>Symmetry / cut plane</td><td><strong>Slice</strong>, <strong>Clip</strong></td><td>Color <strong>p</strong>, **\</td><td>U\</td><td><strong>, or </strong>Cp** on the cut</td></tr><tr><td>Pressure or speed bands</td><td><strong>Contour</strong></td><td>Useful on <strong>p</strong> or **\</td><td>U\</td><td>** for shocks</td></tr><tr><td>Pathlines in the flow</td><td><strong>Stream Tracer</strong></td><td>Seeds upstream; vectors <strong>U</strong></td></tr><tr><td>Thick streamlines</td><td><strong>Tube</strong></td><td>Apply to Stream Tracer output</td></tr><tr><td>Arrows on a plane</td><td><strong>Slice</strong> → <strong>Glyph</strong></td><td>Vectors <strong>U</strong>; use a small scale factor</td></tr><tr><td>Wall Cp / mesh check</td><td>Wall <code>.vtp</code> or <strong>body</strong> from <code>.vtm</code></td><td><strong>Cp</strong>, <strong>yPlus</strong></td></tr><tr><td>LIC texture (if available)</td><td><strong>Surface LIC</strong> on a slice</td><td>2D slice; vectors <strong>U</strong></td></tr></tbody></table></div>
+<h3 id="paraview-tips">ParaView tips</h3>
+<ul>
+<li>Turn on <strong>Surface With Edges</strong> once to confirm the snappy surface patch names (<code>body</code>, <code>body_wing</code>, …).</li>
+<li>Use <strong>Find Data</strong> on the wall patch to read Cp at a point (e.g. wing leading edge).</li>
+<li>Compare two angles of attack by opening two run folders and syncing the camera, or use ParaView’s <strong>Compare</strong> layout.</li>
+<li><code>farfield.vtp</code> is the outer boundary; useful for checking inlet/outlet behavior, not for Cp on the model.</li>
+<li>On macOS Homebrew ParaView, an empty <code>case.foam</code> is unreliable; use the VTK paths above instead of opening the OpenFOAM case directory.</li>
+</ul>
+<h2 id="limits">Limits</h2>
+<p>Steady RANS, one body, external flow. Wall functions want average y+ from 30 to 300 and a minimum of at least 11. This is not a substitute for a wind tunnel.</p>
+<h2 id="command-line-flags">Command-line flags</h2>
+<div class="table-wrap"><table><thead><tr><th>Flag</th><th>Meaning</th></tr></thead><tbody><tr><td><code>-a DEG</code></td><td>Angle of attack</td></tr><tr><td><code>-v M/S</code></td><td>Airspeed</td></tr><tr><td><code>-s FILE</code></td><td>STL</td></tr><tr><td><code>-b FT</code></td><td>Built-in plane span</td></tr><tr><td><code>-u UNIT</code></td><td>STL units</td></tr><tr><td><code>-q QUAL</code></td><td><code>coarse</code>, <code>medium</code>, <code>fine</code>, <code>vfine</code></td></tr><tr><td><code>-l N</code></td><td>Prism layers</td></tr><tr><td><code>-i N</code>, <code>--max-iterations N</code></td><td>Max SIMPLE iterations (<code>ITERS</code> in config)</td></tr><tr><td><code>--max-compute LEVEL</code></td><td><code>light</code>, <code>medium</code>, or <code>heavy</code> (<code>MAX_COMPUTE</code> in config)</td></tr><tr><td><code>-n N</code></td><td>MPI ranks</td></tr><tr><td><code>-A -C -X -Z</code></td><td>Area, length, moment center x and z</td></tr><tr><td><code>-m</code></td><td>Rebuild the mesh</td></tr><tr><td><code>-p</code></td><td>Open the wall surface in ParaView</td></tr><tr><td><code>-w</code></td><td>Keep a partial run on Ctrl+C</td></tr><tr><td><code>--smoke</code></td><td>Coarse mesh, 80 iterations, 1 rank, no layers (<code>SMOKE=1</code>)</td></tr><tr><td><code>--volume</code></td><td>Keep volume VTK (<code>internal.vtu</code>, <code>.vtm</code>) for slices and streamlines (<code>VOLUME=1</code>). Default is the wall surface only</td></tr><tr><td><code>--no-scatter</code></td><td>Means only in <code>report.txt</code>; leave <code>sigma_*</code> blank in <code>results.csv</code></td></tr><tr><td><code>--results-only</code></td><td>No ParaView/VTK; delete OpenFOAM fields after the results report</td></tr><tr><td><code>--aoas LIST</code></td><td>Comma-separated angles. One mesh, one solve each. Writes <code>polar.csv</code> and <code>polar.svg</code></td></tr><tr><td><code>--polar</code></td><td>Rebuild <code>polar.csv</code> and <code>polar.svg</code> from finished runs. Does not mesh or solve</td></tr><tr><td><code>--print</code></td><td>Resolve and exit</td></tr><tr><td><code>--config FILE</code></td><td>Use this config instead of the wrapper's file</td></tr></tbody></table></div>
+</main>
+</div>
+</body>
+</html>

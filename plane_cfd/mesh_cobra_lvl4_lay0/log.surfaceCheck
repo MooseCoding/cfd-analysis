@@ -1,0 +1,184 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2512                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _87ed40d256-20251219 OPENFOAM=2512 version=v2512
+Arch   : "LSB;label=32;scalar=64"
+Exec   : surfaceCheck constant/triSurface/body.stl
+Date   : Oct 28 2026
+Time   : 02:24:20
+Host   : MooseCodings-MacBook-Pro.local
+PID    : 89517
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+I/O    : uncollated
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+Case   : /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/mesh_cobra_lvl4_lay0
+nProcs : 1
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+memory pool : not available
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Reading surface from "constant/triSurface/body.stl" ...
+
+Statistics:
+Triangles    : 318138 in 1 region(s)
+Vertices     : 162092
+Bounding Box : (0.085 -0.44977 -0.0498869) (0.947186 0.44977 0.180282)
+
+Index	Region	Size
+-----	------	----
+0	plane	318138
+
+
+Surface has 821 illegal triangles.
+--> FOAM Warning : 
+    From static bool Foam::triSurfaceTools::validTri(const triSurface &, const label, const bool)
+    in file triSurface/triSurfaceTools/triSurfaceTools.C at line 2703
+    triangle 14473 uses non-unique vertices ((7519 7537 7537) 0) coords:3((0.513681 -0.364907 -0.0371077) (0.508614 -0.34745 -0.0371673) (0.508614 -0.34745 -0.0371673))
+--> FOAM Warning : 
+    From static bool Foam::triSurfaceTools::validTri(const triSurface &, const label, const bool)
+    in file triSurface/triSurfaceTools/triSurfaceTools.C at line 2703
+    triangle 14477 uses non-unique vertices ((7539 7538 7538) 0) coords:3((0.5146 -0.364908 -0.0371948) (0.50918 -0.346718 -0.0372402) (0.50918 -0.346718 -0.0372402))
+--> FOAM Warning : 
+    From static bool Foam::triSurfaceTools::validTri(const triSurface &, const label, const bool)
+    in file triSurface/triSurfaceTools/triSurfaceTools.C at line 2703
+    triangle 14669 uses non-unique vertices ((7640 7650 7650) 0) coords:3((0.512813 -0.341944 -0.037488) (0.512943 -0.341776 -0.0374938) (0.512943 -0.341776 -0.0374938))
+--> FOAM Warning : 
+    From static bool Foam::triSurfaceTools::validTri(const triSurface &, const label, const bool)
+    in file triSurface/triSurfaceTools/triSurfaceTools.C at line 2703
+    triangle 14993 uses non-unique vertices ((7878 7882 7882) 0) coords:3((0.510408 -0.317104 -0.0375575) (0.518396 -0.334731 -0.0375008) (0.518396 -0.334731 -0.0375008))
+--> FOAM Warning : 
+    From static bool Foam::triSurfaceTools::validTri(const triSurface &, const label, const bool)
+    in file triSurface/triSurfaceTools/triSurfaceTools.C at line 2703
+    triangle 15072 uses non-unique vertices ((7864 7863 7863) 0) coords:3((0.502042 -0.317102 -0.0373703) (0.497019 -0.303823 -0.0372856) (0.497019 -0.303823 -0.0372856))
+--> FOAM Warning : 
+    From static bool Foam::triSurfaceTools::validTri(const triSurface &, const label, const bool)
+    in file triSurface/triSurfaceTools/triSurfaceTools.C at line 2703
+    triangle 15079 uses non-unique vertices ((7864 7865 7865) 0) coords:3((0.502042 -0.317102 -0.0373703) (0.498397 -0.302042 -0.0373974) (0.498397 -0.302042 -0.0373974))
+--> FOAM Warning : 
+    From static bool Foam::triSurfaceTools::validTri(const triSurface &, const label, const bool)
+    in file triSurface/triSurfaceTools/triSurfaceTools.C at line 2703
+    triangle 15157 uses non-unique vertices ((7878 7956 7956) 0) coords:3((0.510408 -0.317104 -0.0375575) (0.503961 -0.294887 -0.03755) (0.503961 -0.294887 -0.03755))
+--> FOAM Warning : 
+    From static bool Foam::triSurfaceTools::validTri(const triSurface &, const label, const bool)
+    in file triSurface/triSurfaceTools/triSurfaceTools.C at line 2703
+    triangle 15226 uses non-unique vertices ((7984 7984 7951) 0) coords:3((0.50603 -0.2921 -0.0375298) (0.50603 -0.2921 -0.0375298) (0.49648 -0.2693 -0.0374925))
+--> FOAM Warning : 
+    From static bool Foam::triSurfaceTools::validTri(const triSurface &, const label, const bool)
+    in file triSurface/triSurfaceTools/triSurfaceTools.C at line 2703
+    triangle 15255 uses non-unique vertices ((8005 8008 8008) 0) coords:3((0.512254 -0.284059 -0.037338) (0.515552 -0.279798 -0.0371886) (0.515552 -0.279798 -0.0371886))
+--> FOAM Warning : 
+    From static bool Foam::triSurfaceTools::validTri(const triSurface &, const label, const bool)
+    in file triSurface/triSurfaceTools/triSurfaceTools.C at line 2703
+    triangle 15874 uses non-unique vertices ((8350 8358 8358) 0) coords:3((0.482196 -0.263 -0.0368842) (0.482046 -0.26147 -0.0369145) (0.482046 -0.26147 -0.0369145))
+--> FOAM Warning : 
+    From static bool Foam::triSurfaceTools::validTri(const triSurface &, const label, const bool)
+    in file triSurface/triSurfaceTools/triSurfaceTools.C at line 2703
+    triangle 15960 uses non-unique vertices ((8396 8396 8397) 0) coords:3((0.487292 -0.254691 -0.0373514) (0.487292 -0.254691 -0.0373514) (0.490772 -0.263 -0.0374194))
+Suppressing further warning messages. Use -outputThreshold to increase number of warnings.
+Dumping conflicting face labels to "illegalFaces"
+Paste this into the input for surfaceSubset
+
+Triangle quality (equilateral=1, collapsed=0):
+    0 .. 0.05  : 0.253384
+    0.05 .. 0.1  : 0.0802136
+    0.1 .. 0.15  : 0.0745023
+    0.15 .. 0.2  : 0.0685111
+    0.2 .. 0.25  : 0.0677599
+    0.25 .. 0.3  : 0.0554445
+    0.3 .. 0.35  : 0.047866
+    0.35 .. 0.4  : 0.0400581
+    0.4 .. 0.45  : 0.0353746
+    0.45 .. 0.5  : 0.034265
+    0.5 .. 0.55  : 0.0310777
+    0.55 .. 0.6  : 0.0285599
+    0.6 .. 0.65  : 0.0278244
+    0.65 .. 0.7  : 0.0298078
+    0.7 .. 0.75  : 0.0297387
+    0.75 .. 0.8  : 0.045562
+    0.8 .. 0.85  : 0.0159491
+    0.85 .. 0.9  : 0.0125606
+    0.9 .. 0.95  : 0.011495
+    0.95 .. 1  : 0.010046
+
+    min 0 for triangle 14473
+    max 1 for triangle 142087
+
+--> FOAM Warning : 
+    From int main(int, char **)
+    in file surfaceCheck.C at line 590
+    Minimum triangle quality is 0. This might give problems in self-intersection testing later on.
+Dumping bad quality faces to "badFaces"
+Paste this into the input for surfaceSubset
+
+
+Edges:
+    min 0 for edge 174727 points (0.55841 -0.427394 -0.0361654)(0.55841 -0.427394 -0.0361654)
+    max 0.147918 for edge 290718 points (0.873209 -6.91215e-05 0.155322)(0.769348 2.79144e-16 0.05)
+
+Checking for points less than 1e-6 of bounding box ((0.862186 0.899541 0.230169) metre) apart.
+    small edge between points 30975 (0.0850285 6.53928e-05 -0.0206851) and 30976 (0.0850282 6.5e-05 -0.0206852) distance:5.17841e-07
+    small edge between points 165 (0.086 -2.5e-05 -0.0221862) and 151 (0.085999 -2.5e-05 -0.0221865) distance:9.90705e-07
+    close unconnected points 33914 (0.154836 0.002 0.0185251) and 33884 (0.154836 0.002 0.0185251) distance:1.86265e-09
+    close unconnected points 33911 (0.154836 0.002 0.0189961) and 3975 (0.154836 0.002 0.0189961) distance:9.31323e-10
+    close unconnected points 33967 (0.155896 0.00281195 0.019023) and 33966 (0.155896 0.00281194 0.0190229) distance:3.43084e-08
+    close unconnected points 33960 (0.155896 0.00281192 0.019023) and 33967 (0.155896 0.00281195 0.019023) distance:3.54025e-08
+    close unconnected points 3954 (0.155896 -0.00317942 0.0190945) and 3951 (0.155896 -0.00317942 0.0190945) distance:9.31323e-10
+    small edge between points 3999 (0.156395 -0.0047991 0.0185839) and 4021 (0.156395 -0.00479879 0.0185839) distance:3.2024e-07
+    small edge between points 34029 (0.157095 0.00843509 0.0189515) and 34043 (0.157095 0.00843512 0.0189514) distance:1.14113e-07
+    small edge between points 3877 (0.157225 -0.00880063 0.0188879) and 3875 (0.157225 -0.00880047 0.018888) distance:1.96147e-07
+Suppressing further warning messages. Use -outputThreshold to increase number of warnings.
+Found 3972 nearby points.
+
+Surface is not closed since not all edges (483789) connected to two faces:
+    connected to one face : 14398
+    connected to >2 faces : 1478
+Conflicting face labels:20254
+
+Number of unconnected parts : 81
+Splitting surface into parts ...
+
+Wrote zoning to "constant/triSurface/body.vtp"
+
+Limiting number of files to 10
+writing part 0 size 317957 to "constant/triSurface/body_0.obj"
+writing part 1 size 1 to "constant/triSurface/body_1.obj"
+writing part 2 size 1 to "constant/triSurface/body_2.obj"
+writing part 3 size 1 to "constant/triSurface/body_3.obj"
+writing part 4 size 1 to "constant/triSurface/body_4.obj"
+writing part 5 size 7 to "constant/triSurface/body_5.obj"
+writing part 6 size 1 to "constant/triSurface/body_6.obj"
+writing part 7 size 1 to "constant/triSurface/body_7.obj"
+writing part 8 size 1 to "constant/triSurface/body_8.obj"
+writing part 9 size 2 to "constant/triSurface/body_9.obj"
+
+Number of zones (connected area with consistent normal) : 966
+More than one normal orientation.
+Wrote zoning to "constant/triSurface/body.vtp"
+
+Limiting number of files to 10
+writing part 0 size 315056 to "constant/triSurface/body_normal_0.obj"
+writing part 1 size 1 to "constant/triSurface/body_normal_1.obj"
+writing part 2 size 1 to "constant/triSurface/body_normal_2.obj"
+writing part 3 size 1 to "constant/triSurface/body_normal_3.obj"
+writing part 4 size 1 to "constant/triSurface/body_normal_4.obj"
+writing part 5 size 1 to "constant/triSurface/body_normal_5.obj"
+writing part 6 size 1 to "constant/triSurface/body_normal_6.obj"
+writing part 7 size 1 to "constant/triSurface/body_normal_7.obj"
+writing part 8 size 1 to "constant/triSurface/body_normal_8.obj"
+writing part 9 size 1 to "constant/triSurface/body_normal_9.obj"
+
+
+End
+

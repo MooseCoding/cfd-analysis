@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pipeline</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<a class="brand" href="index.html">External-flow CFD</a>
+<nav>
+<a href="index.html">Guide</a>
+<a href="tutorial.html">Tutorial</a>
+<a href="concepts.html">Concepts</a>
+<a href="mesh.html">Mesh</a>
+<a href="troubleshooting.html">Troubleshoot</a>
+<a href="pipeline.html" class="active">Pipeline</a>
+<a href="api.html">API</a>
+</nav>
+</header>
+<div class="layout">
+<nav class="toc">
+<p class="toc-label">Contents</p>
+<a href="#from-config-to-report">From config to report</a>
+<a href="#configuration">Configuration</a>
+<a href="#plan">Plan</a>
+<a href="#geometry">Geometry</a>
+<a href="#mesh-dictionaries">Mesh dictionaries</a>
+<a href="#case">Case</a>
+<a href="#solve">Solve</a>
+<a href="#report">Report</a>
+<a href="#what-to-edit">What to edit</a>
+</nav>
+<main>
+<h1 id="pipeline">Pipeline</h1>
+<p>What happens between a config file and <code>summary.json</code>. User-facing steps are in the <a href="tutorial.html">tutorial</a>. This page is the map of the package. <code>AGENTS.md</code> is the short version of the same map for editing the repo.</p>
+<h2 id="from-config-to-report">From config to report</h2>
+<ol>
+<li>Resolve settings: file, then environment, then flags.</li>
+<li>Pick the solver from Mach number.</li>
+<li>Build or reuse a cleaned STL and a reference area.</li>
+<li>Size the mesh and, unless <code>--print</code>, run <code>blockMesh</code> and <code>snappyHexMesh</code>.</li>
+<li>Write <code>0/</code>, <code>constant/</code>, and <code>system/</code>.</li>
+<li>Run <code>simpleFoam</code> or <code>rhoSimpleFoam</code>.</li>
+<li>Export VTK, write <code>summary.json</code>, <code>report.txt</code>, <code>history.csv</code>, and append the output folder's tables.</li>
+</ol>
+<p><code>plan(cfg)</code> stops after step 3 and returns the summary dict. It still writes the cleaned STL. <code>run(cfg)</code> is the full list and needs the OpenFOAM binaries on <code>PATH</code>.</p>
+<h2 id="configuration">Configuration</h2>
+<p><code>cfd/config.py</code> loads <code>KEY=value</code> lines, ignoring comments. Environment variables with the same names override the file when they are already set. CLI flags override both. <code>make_config</code> and <code>resolve</code> share that order.</p>
+<p>Unknown keys call <code>die()</code> and exit. <code>./plane-foam.sh</code> is a thin wrapper that execs <code>python3 -m cfd --config config/plane.conf</code> and appends your flags.</p>
+<p><code>--print</code>, <code>--polar</code>, and <code>--help</code> skip the OpenFOAM search in <code>cfd/env.py</code>. Any other invocation sources a local <code>etc/bashrc</code> or re-execs inside Docker before <code>run</code>.</p>
+<h2 id="plan">Plan</h2>
+<p><code>cfd/api.py</code> <code>plan</code> calls <code>isa</code> and <code>choose_solver</code> in <code>cfd/aero.py</code>, then <code>prepare</code> in <code>cfd/geom.py</code>. The returned dict is what <code>--print</code> displays: Mach, Reynolds number, reference, mesh estimate, and freestream <code>k</code> and <code>omega</code>. At Mach 1 and above it also warns about a bow shock. The thresholds are in <a href="concepts.html#mach-number-and-the-solver">Concepts</a>.</p>
+<h2 id="geometry">Geometry</h2>
+<p><code>prepare</code> reads the STL or writes a built-in one, drops degenerate triangles, scales to metres, and computes the reference. Plane area is the wing planform. Rocket diameter is the longest constant-radius stretch of the tube, ignoring solids whose names look like fins. Body area is the frontal projection.</p>
+<p>The built-in plane is a lofted shape from <code>make</code> in <code>cfd/geom.py</code>. The built-in rocket is <code>make_rocket</code>: an ogive, cone, or elliptical nose, a tube, and flat fins. Editing those functions changes the surface the next run will mesh.</p>
+<h2 id="mesh-dictionaries">Mesh dictionaries</h2>
+<p><code>cfd/mesh.py</code> writes <code>blockMeshDict</code>, <code>snappyHexMeshDict</code>, and the feature-extract dictionary, then runs the binaries. A folder that already has <code>.mesh_ok</code> and a <code>checkMesh</code> log containing <code>Mesh OK</code> is copied forward instead. The rules are in <a href="mesh.html#when-a-mesh-is-reused">Mesh</a>.</p>
+<h2 id="case">Case</h2>
+<p><code>cfd/case.py</code> writes boundary conditions, schemes, <code>fvSolution</code>, and the force function objects. Wall patches match <code>body.*</code>. Freestream velocity comes from <code>freestream()</code> in <code>cfd/aero.py</code>. Force coefficients use the reference area, reference length, and moment center from the plan, including any <code>-A</code>, <code>-C</code>, <code>-X</code>, or <code>-Z</code> override.</p>
+<p>Incompressible runs write kinematic pressure. Compressible runs write absolute pressure, temperature, and a perfect-gas thermophysical model. Both write <code>k</code>, <code>omega</code>, and a <code>Cp</code> function object.</p>
+<h2 id="solve">Solve</h2>
+<p><code>cfd/solve.py</code> runs one rank or <code>mpirun</code>. It prints a line every 25 iterations. Ctrl+C behavior is in <a href="troubleshooting.html#stopping-with-ctrlc">Troubleshooting</a>.</p>
+<p>The first attempt uses <code>limitedLinear</code> on the turbulence divergence. If that attempt does not reach <code>End</code>, and it did produce a time directory, the solution is deleted and the case is solved once with upwind. Residual convergence is the line <code>SIMPLE solution converged</code> in the log. Reaching <code>endTime</code> without that line is status <code>stopped</code>.</p>
+<p><code>sweep</code> in <code>cfd/api.py</code> repeats <code>run</code> for each angle. A <code>die()</code> from one angle is caught, that angle is marked failed, and the next angle starts. Status 130 from Ctrl+C still stops the process.</p>
+<h2 id="report">Report</h2>
+<p><code>cfd/report.py</code> reads the solver log, <code>postProcessing/forceCoeffs1/*/coefficient.dat</code>, y+, and <code>checkMesh</code>. It writes:</p>
+<div class="table-wrap"><table><thead><tr><th>File</th><th>Where</th></tr></thead><tbody><tr><td><code>summary.json</code></td><td>Run folder, and one JSON line in <code>summaries.jsonl</code></td></tr><tr><td><code>summary.csv</code></td><td>Output folder, short columns</td></tr><tr><td><code>report.txt</code></td><td>Run folder</td></tr><tr><td><code>history.csv</code>, <code>history.svg</code></td><td>Run folder, every iteration</td></tr><tr><td><code>results.csv</code> or <code>results_partial.csv</code></td><td>Output folder, wide columns</td></tr><tr><td><code>spanwise_cl.csv</code> or <code>axial_load.csv</code></td><td>Run folder, when that profile's bins exist</td></tr><tr><td><code>polar.csv</code>, <code>polar.svg</code></td><td>Output folder, after a sweep or <code>--polar</code></td></tr></tbody></table></div>
+<p><code>write_polar</code> reads <code>summaries.jsonl</code> and keeps the last record for each angle. Angles that failed in the current sweep replace that record with status <code>failed</code>.</p>
+<h2 id="what-to-edit">What to edit</h2>
+<div class="table-wrap"><table><thead><tr><th>Change</th><th>File</th></tr></thead><tbody><tr><td>A number for one run</td><td><code>config/*.conf</code> or a flag</td></tr><tr><td>A new flag or config key</td><td><code>cfd/config.py</code></td></tr><tr><td>The built-in shape or the reference</td><td><code>cfd/geom.py</code></td></tr><tr><td>Mach switch, ISA, CA, CN</td><td><code>cfd/aero.py</code></td></tr><tr><td>Snappy or blockMesh settings</td><td><code>cfd/mesh.py</code></td></tr><tr><td>Boundary conditions or force objects</td><td><code>cfd/case.py</code></td></tr><tr><td>MPI, Ctrl+C, the upwind retry</td><td><code>cfd/solve.py</code></td></tr><tr><td><code>summary.json</code>, history, the polar</td><td><code>cfd/report.py</code></td></tr><tr><td>Docker or <code>bashrc</code> discovery</td><td><code>cfd/env.py</code></td></tr><tr><td><code>plan</code>, <code>run</code>, <code>sweep</code></td><td><code>cfd/api.py</code></td></tr></tbody></table></div>
+<p>Checks that do not need OpenFOAM:</p>
+<pre><code>python3 -m unittest tests.test_cfd
+./plane-foam.sh --print
+./docs.sh --build</code></pre>
+</main>
+</div>
+</body>
+</html>

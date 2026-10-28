@@ -1,0 +1,30 @@
+{
+  "coefficients": {
+    "Cd": 0.064462,
+    "Cl": 0.217252,
+    "L_over_D": 3.370229,
+    "drag_N": 1.681777,
+    "lift_N": 5.667974
+  },
+  "files": {
+    "report": "report.txt",
+    "surface": "VTK/run_cobra_lvl4_aoa0_v20_1000/boundary/body.vtp",
+    "volume": null
+  },
+  "flight": {
+    "alt_m": 0.0,
+    "aoa_deg": 0.0,
+    "mach": 0.0588,
+    "reynolds": 260163,
+    "speed_m_s": 20.0
+  },
+  "geometry": "cobra",
+  "profile": "plane",
+  "quality": {
+    "cells": 679794,
+    "iterations": 1000,
+    "yplus_avg": 184.9595,
+    "yplus_pass": false
+  },
+  "status": "stopped"
+}

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Python API</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<a class="brand" href="index.html">External-flow CFD</a>
+<nav>
+<a href="index.html">Guide</a>
+<a href="tutorial.html">Tutorial</a>
+<a href="concepts.html">Concepts</a>
+<a href="mesh.html">Mesh</a>
+<a href="troubleshooting.html">Troubleshoot</a>
+<a href="pipeline.html">Pipeline</a>
+<a href="api.html" class="active">API</a>
+</nav>
+</header>
+<div class="layout">
+<nav class="toc">
+<p class="toc-label">Contents</p>
+<a href="#contents">Contents</a>
+<a href="#setup">Setup</a>
+<a href="#quick-example">Quick example</a>
+<a href="#public-exports">Public exports</a>
+<a href="#configuration">Configuration</a>
+<a class="sub" href="#make_configconfig_pathnone-environnone-overrides"><code>make_config(config_path=None, environ=None, **overrides)</code></a>
+<a class="sub" href="#resolveargvnone-environnone"><code>resolve(argv=None, environ=None)</code></a>
+<a class="sub" href="#config-fields">Config fields</a>
+<a href="#planning-without-openfoam">Planning without OpenFOAM</a>
+<a class="sub" href="#plancfg---dict"><code>plan(cfg) -&gt; dict</code></a>
+<a href="#running-a-case">Running a case</a>
+<a class="sub" href="#runcfg---runresult"><code>run(cfg) -&gt; RunResult</code></a>
+<a href="#runresult"><code>RunResult</code></a>
+<a href="#reading-results">Reading results</a>
+<a class="sub" href="#read_csvpath---listdict"><code>read_csv(path) -&gt; list[dict]</code></a>
+<a class="sub" href="#read_resultsout_dir-include_partialtrue---listdict"><code>read_results(out_dir, include_partial=True) -&gt; list[dict]</code></a>
+<a class="sub" href="#list_runsout_dir---liststr"><code>list_runs(out_dir) -&gt; list[str]</code></a>
+<a class="sub" href="#read_runrundir---runresult"><code>read_run(rundir) -&gt; RunResult</code></a>
+<a class="sub" href="#per-run-files-not-wrapped-by-the-api">Per-run files (not wrapped by the API)</a>
+<a href="#vtk-and-paraview">VTK and ParaView</a>
+<a href="#results-csv-columns">Results CSV columns</a>
+<a href="#case_metaenv-keys-selection"><code>case_meta.env</code> keys (selection)</a>
+<a href="#profiles">Profiles</a>
+<a href="#sweep">Sweep</a>
+<a href="#batch-and-parametric-studies">Batch and parametric studies</a>
+<a href="#cli-equivalence">CLI equivalence</a>
+<a href="#other-modules">Other modules</a>
+<a href="#tests">Tests</a>
+<a href="#errors">Errors</a>
+</nav>
+<main>
+<h1 id="python-api">Python API</h1>
+<p>The <code>cfd</code> package runs the same mesh → solve → report pipeline as <code>./plane-foam.sh</code> and friends, but from Python. Configuration, dry-run planning, execution, and reading results are all supported. The implementation uses only the Python standard library (no pip dependencies).</p>
+<p>For flight profiles, solvers, ParaView, and folder layout, see <a href="index.html">README.md</a>.</p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li><a href="#setup">Setup</a> and a <a href="#quick-example">quick example</a></li>
+<li><a href="#public-exports">Public exports</a></li>
+<li><a href="#configuration">Configuration</a> (<code>make_config</code>, <code>resolve</code>, every field)</li>
+<li><a href="#planning-without-openfoam">Planning without OpenFOAM</a></li>
+<li><a href="#running-a-case">Running a case</a> and <a href="#runresult"><code>RunResult</code></a></li>
+<li><a href="#reading-results">Reading results</a>, <a href="#vtk-and-paraview">VTK and ParaView</a>, <a href="#results-csv-columns">CSV columns</a>, <a href="#case_metaenv-keys"><code>case_meta.env</code></a></li>
+<li><a href="#profiles">Profiles</a>, <a href="#sweep">sweeps</a>, <a href="#cli-equivalence">CLI map</a></li>
+<li><a href="#other-modules">Other modules</a> (atmosphere, coefficients, report rewrite)</li>
+<li><a href="#tests">Tests</a> and <a href="#errors">errors</a></li>
+</ul>
+<h2 id="setup">Setup</h2>
+<p>Run Python from the repository root (or any directory where <code>cfd</code> is on <code>PYTHONPATH</code>):</p>
+<pre><code>cd /path/to/openfoam
+python3</code></pre>
+<p><code>plan()</code> and <code>read_*()</code> do not need OpenFOAM. <code>run()</code> uses <code>simpleFoam</code> already on <code>PATH</code>. <code>python3 -m cfd</code> (and <code>./plane-foam.sh</code>) source a local OpenFOAM <code>etc/bashrc</code> or re-exec inside <code>opencfd/openfoam-run:2512</code> when Docker is available. <code>--print</code> does neither.</p>
+<pre><code>import cfd</code></pre>
+<h2 id="quick-example">Quick example</h2>
+<pre><code>from cfd import make_config, plan, run, read_results
+
+cfg = make_config(
+    &quot;config/body.conf&quot;,
+    stl=&quot;model.stl&quot;,
+    units=&quot;m&quot;,
+    speed=15.0,
+    aoa=0.0,
+    out=&quot;./body_cfd&quot;,
+)
+
+# Inspect solver choice and paths without OpenFOAM
+info = plan(cfg)
+print(info[&quot;mach&quot;], info[&quot;solver&quot;], info[&quot;run_dir&quot;])
+
+# Full solve (needs OpenFOAM in PATH)
+result = run(cfg)
+print(result.rundir, result.coefficients[&quot;Cl&quot;], result.coefficients[&quot;Cd&quot;])
+
+# History across runs in the output folder (summary records)
+for row in read_results(&quot;./body_cfd&quot;):
+    print(row[&quot;geometry&quot;], row[&quot;flight&quot;][&quot;aoa_deg&quot;], row[&quot;coefficients&quot;][&quot;Cl&quot;], row[&quot;coefficients&quot;][&quot;Cd&quot;])</code></pre>
+<h2 id="public-exports">Public exports</h2>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>Role</th></tr></thead><tbody><tr><td><code>make_config</code></td><td>Build a <code>Config</code> from a <code>.conf</code> file plus keyword overrides</td></tr><tr><td><code>from_mapping</code></td><td>Same as <code>make_config</code> (alias in <code>cfd.config</code>)</td></tr><tr><td><code>resolve</code></td><td>Build a <code>Config</code> from CLI-style <code>argv</code> (as used by <code>python3 -m cfd</code>)</td></tr><tr><td><code>plan</code></td><td>Geometry + reference + solver summary; no OpenFOAM binaries</td></tr><tr><td><code>run</code></td><td>Full pipeline; returns <code>RunResult</code></td></tr><tr><td><code>sweep</code></td><td>Solve several angles into one output folder; write <code>polar.csv</code></td></tr><tr><td><code>write_polar</code></td><td>Rebuild <code>polar.csv</code> and <code>polar.svg</code> from <code>summaries.jsonl</code></td></tr><tr><td><code>read_csv</code></td><td>Parse one <code>results.csv</code> or <code>results_partial.csv</code></td></tr><tr><td><code>read_results</code></td><td>Summary records from <code>summaries.jsonl</code>, or the wide CSV when that file is missing</td></tr><tr><td><code>list_runs</code></td><td><code>run_*</code> case directories, oldest first</td></tr><tr><td><code>read_run</code></td><td>Meta + coefficients for one run folder</td></tr><tr><td><code>RunResult</code></td><td>Object returned by <code>run</code> and <code>read_run</code></td></tr><tr><td><code>Config</code></td><td>Plain namespace of run settings</td></tr></tbody></table></div>
+<p>Import either from the package or from submodules:</p>
+<pre><code>from cfd import make_config, run
+from cfd.config import resolve, from_mapping</code></pre>
+<h2 id="configuration">Configuration</h2>
+<h3 id="make_configconfig_pathnone-environnone-overrides"><code>make_config(config_path=None, environ=None, **overrides)</code></h3>
+<ol>
+<li>Loads defaults, then the config file (default: <code>config/body.conf</code> if <code>config_path</code> is omitted).</li>
+<li>Applies <code>environ</code> keys that match config file names (<code>SPEED</code>, <code>AOA</code>, <code>STL</code>, …).</li>
+<li>Applies <code>**overrides</code> using Python attribute names on <code>Config</code>.</li>
+</ol>
+<p>Example:</p>
+<pre><code>cfg = make_config(
+    &quot;config/plane.conf&quot;,
+    environ={},           # optional; defaults to os.environ
+    speed=18.0,
+    aoa=6.0,
+    max_iterations=3000,  # alias of iters; same as CLI --max-iterations
+    remesh=True,          # force a new mesh this run
+    write_on_exit=True,   # Ctrl+C: write fields and post-process (same as `-w`)
+)</code></pre>
+<p>Relative <code>stl</code> paths in a config file are resolved against the config file’s directory. Passing <code>stl=</code> in overrides uses the path you give (absolute or relative to the current working directory).</p>
+<p>If <code>out</code> is empty, it becomes <code>plane_cfd</code>, <code>rocket_cfd</code>, or <code>body_cfd</code> under the repository root (<code>cfd.config.REPO_ROOT</code>), not the shell cwd. Relative <code>OUT</code> in a config file is resolved against that file’s directory; relative <code>out</code> from the API or environment is resolved against <code>REPO_ROOT</code>. Config paths like <code>config/plane.conf</code> are found via cwd, then <code>REPO_ROOT</code>.</p>
+<h3 id="resolveargvnone-environnone"><code>resolve(argv=None, environ=None)</code></h3>
+<p>Parses the same flags as the CLI (<code>-a</code>, <code>-v</code>, <code>-s</code>, <code>--config</code>, …). Useful when you already have an argument list:</p>
+<pre><code>from cfd.config import resolve
+
+cfg = resolve([&quot;--config&quot;, &quot;config/rocket.conf&quot;, &quot;-v&quot;, &quot;30&quot;, &quot;-a&quot;, &quot;0&quot;])</code></pre>
+<h3 id="config-fields">Config fields</h3>
+<p>Keywords for <code>make_config</code> / attributes on <code>Config</code> (config file keys in parentheses):</p>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Config key</th><th>Notes</th></tr></thead><tbody><tr><td><code>profile</code></td><td><code>PROFILE</code></td><td><code>plane</code>, <code>rocket</code>, or <code>body</code></td></tr><tr><td><code>aoa</code></td><td><code>AOA</code></td><td>Angle of attack, degrees</td></tr><tr><td><code>speed</code></td><td><code>SPEED</code></td><td>Freestream speed, m/s</td></tr><tr><td><code>alt_m</code></td><td><code>ALT_M</code></td><td>Altitude, m (0–11000, ISA)</td></tr><tr><td><code>stl</code></td><td><code>STL</code></td><td>STL path (<code>body</code> profile requires this)</td></tr><tr><td><code>span_ft</code></td><td><code>SPAN_FT</code></td><td>Built-in plane span, feet</td></tr><tr><td><code>units</code></td><td><code>UNITS</code></td><td><code>m</code>, <code>mm</code>, <code>cm</code>, <code>in</code>, <code>ft</code>, or empty/<code>auto</code></td></tr><tr><td><code>quality</code></td><td><code>QUALITY</code></td><td><code>coarse</code>, <code>medium</code>, <code>fine</code>, <code>vfine</code>, or empty/<code>auto</code></td></tr><tr><td><code>layers</code></td><td><code>LAYERS</code></td><td>Prism layers (0 = wall functions)</td></tr><tr><td><code>iters</code>, <code>max_iterations</code></td><td><code>ITERS</code></td><td>Max SIMPLE iterations (<code>controlDict</code> <code>endTime</code>). On <code>Config</code>, <code>max_iterations</code> is a property backed by <code>iters</code>. Passing both keywords with different values exits.</td></tr><tr><td><code>nprocs</code></td><td><code>NPROCS</code></td><td>MPI ranks (default: CPU count)</td></tr><tr><td><code>max_compute</code></td><td><code>MAX_COMPUTE</code>, <code>COMPUTE</code></td><td>Compute budget: <code>light</code>, <code>medium</code>, or <code>heavy</code> (sets cell cap and, for <code>light</code>, MPI ranks unless <code>CELLCAP</code> / <code>NPROCS</code> are set explicitly)</td></tr><tr><td><code>turb_int</code></td><td><code>TURB_INT</code></td><td>Freestream turbulence intensity</td></tr><tr><td><code>cellcap</code></td><td><code>CELLCAP</code></td><td>Mesh cell budget (overrides <code>MAX_COMPUTE</code> when set explicitly)</td></tr><tr><td><code>target_yplus</code></td><td><code>TARGET_YPLUS</code></td><td>Target wall y+</td></tr><tr><td><code>out</code></td><td><code>OUT</code></td><td>Output directory</td></tr><tr><td><code>ref_area</code></td><td><code>REF_AREA</code></td><td>Reference area, m²</td></tr><tr><td><code>ref_length</code></td><td><code>REF_LENGTH</code>, <code>REF_CHORD</code></td><td>MAC / Lref, m</td></tr><tr><td><code>ref_x</code>, <code>ref_y</code>, <code>ref_z</code></td><td><code>REF_X</code>, <code>REF_Y</code>, <code>REF_Z</code> (and <code>REF_*CG</code>)</td><td>Moment center, m</td></tr><tr><td><code>solver</code></td><td><code>SOLVER</code></td><td><code>auto</code>, <code>simple</code>, or <code>rho</code></td></tr><tr><td><code>target_size_m</code></td><td><code>TARGET_SIZE_M</code></td><td>Length used when guessing STL units. See below.</td></tr><tr><td><code>write_on_exit</code></td><td><code>WRITE_ON_EXIT</code></td><td>Partial run on interrupt</td></tr><tr><td><code>report_scatter</code></td><td><code>REPORT_SCATTER</code></td><td>When false (<code>--no-scatter</code>), coefficients in <code>report.txt</code> are means only and <code>sigma_*</code> CSV fields are left blank</td></tr><tr><td><code>results_only</code></td><td><code>RESULTS_ONLY</code></td><td>Skip VTK and prune the run directory after reporting (<code>summary.json</code>, report, CSV, logs)</td></tr><tr><td><code>smoke</code></td><td><code>SMOKE</code></td><td>CLI <code>--smoke</code>. Forces coarse mesh, 80 iterations, 1 rank, 0 layers. Wins over <code>-i</code>, <code>-n</code>, <code>-q</code>, and <code>-l</code></td></tr><tr><td><code>volume</code></td><td><code>VOLUME</code></td><td>CLI <code>--volume</code>. Keep <code>internal.vtu</code> and the <code>.vtm</code> multiblock file. Required for streamlines and volume slices in ParaView. Default drops <code>internal.vtu</code> after <code>foamToVTK</code></td></tr><tr><td><code>remesh</code></td><td>—</td><td>CLI <code>-m</code>; rebuild mesh</td></tr><tr><td><code>open_pv</code></td><td>—</td><td>CLI <code>-p</code>; open the wall <code>.vtp</code> in ParaView (not the volume; use <code>volume=True</code> and open <code>VTK/*.vtm</code> yourself for flow visualization)</td></tr><tr><td><code>print_only</code></td><td>—</td><td>CLI <code>--print</code>; <code>run()</code> prints the condition and returns without meshing</td></tr><tr><td><code>config_path</code></td><td>—</td><td>Absolute path of the file that was loaded</td></tr></tbody></table></div>
+<p>Built-in rocket only (ignored when <code>stl</code> is set). Lengths are metres. See <code>config/rocket.conf</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Config key</th><th>Default</th><th>Notes</th></tr></thead><tbody><tr><td><code>body_d</code></td><td><code>BODY_D</code></td><td><code>0.1016</code></td><td>Diameter (4 in)</td></tr><tr><td><code>body_l</code></td><td><code>BODY_L</code></td><td><code>0.80</code></td><td>Cylindrical length, not including the nose</td></tr><tr><td><code>nose_l</code></td><td><code>NOSE_L</code></td><td><code>0.20</code></td><td>Nose length</td></tr><tr><td><code>nose</code></td><td><code>NOSE</code></td><td><code>ogive</code></td><td><code>ogive</code>, <code>cone</code>, or <code>elliptical</code></td></tr><tr><td><code>fin_count</code></td><td><code>FIN_COUNT</code></td><td><code>4</code></td><td>At least 2</td></tr><tr><td><code>fin_root</code></td><td><code>FIN_ROOT</code></td><td><code>0.12</code></td><td>Root chord</td></tr><tr><td><code>fin_tip</code></td><td><code>FIN_TIP</code></td><td><code>0.06</code></td><td>Tip chord</td></tr><tr><td><code>fin_span</code></td><td><code>FIN_SPAN</code></td><td><code>0.10</code></td><td>Radial span out from the tube</td></tr><tr><td><code>fin_sweep</code></td><td><code>FIN_SWEEP</code></td><td><code>0.04</code></td><td>Leading-edge sweep, root to tip</td></tr><tr><td><code>fin_x</code></td><td><code>FIN_X</code></td><td>empty</td><td>Root leading edge from the nose tip. Empty puts the trailing edge at the base.</td></tr></tbody></table></div>
+<p><code>target_size_m</code> (<code>TARGET_SIZE_M</code>) is the length hint used when guessing STL units. For a built-in rocket with no STL it defaults to <code>nose_l + body_l</code> inside <code>plan</code> / <code>run</code>. The plane profile does not use it.</p>
+<p>Invalid combinations call <code>die()</code> and exit the process (same as the CLI).</p>
+<h2 id="planning-without-openfoam">Planning without OpenFOAM</h2>
+<h3 id="plancfg---dict"><code>plan(cfg) -&gt; dict</code></h3>
+<p>Builds or reuses geometry, cleans the STL, computes reference lengths and mesh sizing, and picks the solver. Does <strong>not</strong> call <code>blockMesh</code>, <code>snappyHexMesh</code>, or the flow solver.</p>
+<p>Returned keys include:</p>
+<div class="table-wrap"><table><thead><tr><th>Key</th><th>Content</th></tr></thead><tbody><tr><td><code>profile</code>, <code>geometry</code>, <code>geom_dir</code>, <code>mesh_dir</code>, <code>run_dir</code>, <code>out_dir</code></td><td>Paths and names</td></tr><tr><td><code>aoa_deg</code>, <code>speed_ms</code>, <code>alt_m</code>, <code>mach</code>, <code>reynolds</code></td><td>Flight condition</td></tr><tr><td><code>iters</code>, <code>max_iterations</code></td><td>SIMPLE iteration cap (both keys, same integer)</td></tr><tr><td><code>solver_kind</code>, <code>solver</code>, <code>transonic</code>, <code>solver_reason</code></td><td>Solver choice</td></tr><tr><td><code>atmosphere</code></td><td><code>rho</code>, <code>nu</code>, <code>T</code>, <code>p</code>, <code>a</code>, …</td></tr><tr><td><code>reference</code></td><td><code>area_m2</code>, <code>length_m</code>, <code>moment_center_m</code>, <code>source</code>, <code>overridden</code>, <code>diameter_m</code></td></tr><tr><td><code>mesh</code></td><td><code>level</code>, <code>surface_dx_m</code>, <code>predicted_yplus</code>, <code>estimated_cells</code>, …</td></tr><tr><td><code>turbulence</code></td><td><code>intensity</code>, <code>k</code>, <code>omega</code></td></tr><tr><td><code>setup</code></td><td>Full internal dict used by mesh/case writers (advanced use)</td></tr></tbody></table></div>
+<p><code>plan</code> may write under <code>out</code> (e.g. <code>geom_*</code>, cleaned <code>body.stl</code>) because it uses the same geometry step as a real run.</p>
+<p>Dry run via <code>run</code> only (prints to stdout, no solve):</p>
+<pre><code>cfg = make_config(&quot;config/plane.conf&quot;, print_only=True)
+run(cfg)</code></pre>
+<h2 id="running-a-case">Running a case</h2>
+<h3 id="runcfg---runresult"><code>run(cfg) -&gt; RunResult</code></h3>
+<p>Executes mesh generation, case setup, solve, VTK export, and reporting. Progress is printed to stdout like the shell wrappers.</p>
+<p>Requirements:</p>
+<ul>
+<li>OpenFOAM sourced (<code>blockMesh</code>, <code>snappyHexMesh</code>, <code>checkMesh</code>, <code>simpleFoam</code> or <code>rhoSimpleFoam</code>, <code>foamToVTK</code>, …).</li>
+<li>For <code>profile=&quot;body&quot;</code>, <code>cfg.stl</code> must point to an existing file.</li>
+</ul>
+<p>On success, the run folder contains <code>summary.json</code>, <code>case_meta.env</code>, <code>report.txt</code>, <code>results.csv</code> (if Cl/Cd are finite), and, unless <code>results_only</code> is set, VTK under <code>VTK/</code> (wall <code>.vtp</code>, optional <code>internal.vtu</code>, and a <code>.vtm</code> multiblock index) plus <code>postProcessing/</code>. <code>internal.vtu</code> is removed unless <code>volume</code> is set. <code>results_only</code> leaves <code>summary.json</code>, the report, the wide CSV, <code>case_meta.env</code>, optional bin CSVs, and logs. The output folder also gets <code>summaries.jsonl</code>, <code>summary.csv</code>, and a new row in <code>results.csv</code> or <code>results_partial.csv</code>.</p>
+<p><code>print_only=True</code> stops after the flight-condition print. The returned <code>RunResult</code> has paths and a short <code>meta</code> (<code>MACH</code>, <code>RE</code>, <code>GEOMETRY</code>) and no coefficients. Prefer <code>plan(cfg)</code> when you want the full summary dict and no stdout dump.</p>
+<p><code>run</code> calls <code>die()</code> (process exit) when OpenFOAM binaries are missing, the STL is missing, or the solver fails. An interrupt without <code>write_on_exit</code> exits with status 130 and writes nothing. With <code>write_on_exit</code>, the first Ctrl+C keeps a partial result (<code>partial=True</code>, row goes to <code>results_partial.csv</code>).</p>
+<h2 id="runresult"><code>RunResult</code></h2>
+<div class="table-wrap"><table><thead><tr><th>Attribute</th><th>Description</th></tr></thead><tbody><tr><td><code>rundir</code></td><td>Path to <code>run_&lt;name&gt;_lvl…_aoa…_v…/</code></td></tr><tr><td><code>meshdir</code></td><td>Path to <code>mesh_&lt;name&gt;_lvl…_lay…/</code></td></tr><tr><td><code>out_dir</code></td><td>Parent output folder (<code>plane_cfd</code>, etc.)</td></tr><tr><td><code>geometry</code></td><td>Geometry name string (e.g. STL basename or <code>builtin3ft</code>)</td></tr><tr><td><code>partial</code></td><td>True if the solve was interrupted or marked partial</td></tr><tr><td><code>meta</code></td><td>Dict from <code>case_meta.env</code> (<code>MACH</code>, <code>RE</code>, <code>REF_AREA</code>, <code>GEOMETRY</code>, …)</td></tr><tr><td><code>row</code></td><td><code>summary.json</code> when that file exists (numbers and <code>null</code>). Otherwise the last wide <code>results.csv</code> row (strings)</td></tr><tr><td><code>coefficients</code></td><td>The <code>coefficients</code> object from <code>summary.json</code> (<code>Cl</code>, <code>Cd</code>, <code>L_over_D</code>, <code>lift_N</code>, <code>drag_N</code>). Alias for <code>row</code> when the run only has the wide CSV</td></tr><tr><td><code>solve</code></td><td>Dict from the solver step. Empty when loaded with <code>read_run</code>.</td></tr></tbody></table></div>
+<p><code>solve</code> after a real <code>run()</code>:</p>
+<div class="table-wrap"><table><thead><tr><th>Key</th><th>Content</th></tr></thead><tbody><tr><td><code>solved</code></td><td><code>True</code> when the solver returned</td></tr><tr><td><code>interrupted</code></td><td><code>0</code>, or <code>1</code> if stopped with <code>-w</code> / <code>write_on_exit</code></td></tr><tr><td><code>scheme</code></td><td><code>&quot;limitedLinear&quot;</code>, or <code>&quot;upwind&quot;</code> after the one turbulence retry</td></tr><tr><td><code>stop</code></td><td><code>&quot;residuals&quot;</code>, <code>&quot;iterations&quot;</code> (hit the cap), or <code>&quot;interrupted&quot;</code></td></tr><tr><td><code>log</code></td><td>Path to <code>log.simpleFoam</code> or <code>log.rhoSimpleFoam</code></td></tr></tbody></table></div>
+<p><code>get(key, default=None)</code> checks <code>row</code>, then <code>coefficients</code>, <code>flight</code>, <code>quality</code>, and <code>rocket</code>, then <code>meta</code> (env keys like <code>SPEED</code>).</p>
+<p>After <code>run()</code>:</p>
+<pre><code>result = run(cfg)
+cl = result.coefficients[&quot;Cl&quot;]          # float, or None
+mach = result.row[&quot;flight&quot;][&quot;mach&quot;]     # also result.meta[&quot;MACH&quot;] on a fresh run
+log_path = result.solve.get(&quot;log&quot;)</code></pre>
+<h2 id="reading-results">Reading results</h2>
+<h3 id="read_csvpath---listdict"><code>read_csv(path) -&gt; list[dict]</code></h3>
+<p>Returns one dict per data row. Missing file → <code>[]</code>. Column names match <a href="#results-csv-columns">results CSV format</a>.</p>
+<h3 id="read_resultsout_dir-include_partialtrue---listdict"><code>read_results(out_dir, include_partial=True) -&gt; list[dict]</code></h3>
+<p>Reads <code>out_dir/summaries.jsonl</code> when that file exists. Each record matches <code>summary.json</code> (numbers and <code>null</code>). <code>include_partial=False</code> drops records whose <code>status</code> is <code>partial</code>. If the JSONL file is missing, this falls back to <code>results.csv</code> plus <code>results_partial.csv</code> and those rows stay strings.</p>
+<h3 id="list_runsout_dir---liststr"><code>list_runs(out_dir) -&gt; list[str]</code></h3>
+<p>Absolute paths to <code>run_*</code> directories, sorted by modification time (oldest first).</p>
+<h3 id="read_runrundir---runresult"><code>read_run(rundir) -&gt; RunResult</code></h3>
+<p>Loads <code>summary.json</code> when present, otherwise <code>case_meta.env</code> and the last row of <code>rundir/results.csv</code>. Use this to reload an old run without solving again:</p>
+<pre><code>from cfd import list_runs, read_run
+
+runs = list_runs(&quot;./body_cfd&quot;)
+latest = read_run(runs[-1])
+print(latest.row[&quot;status&quot;], latest.coefficients[&quot;Cd&quot;])</code></pre>
+<h3 id="per-run-files-not-wrapped-by-the-api">Per-run files (not wrapped by the API)</h3>
+<p>You can still open these paths directly:</p>
+<div class="table-wrap"><table><thead><tr><th>Path</th><th>Content</th></tr></thead><tbody><tr><td><code>&lt;rundir&gt;/summary.json</code></td><td>Flight, coefficients, quality, <code>files.surface</code> (wall <code>.vtp</code>), <code>files.volume</code> (<code>internal.vtu</code> when <code>volume=True</code>)</td></tr><tr><td><code>&lt;rundir&gt;/VTK/*.vtm</code></td><td>Multiblock VTK: internal volume + boundary (when VTK was written and <code>results_only</code> is false)</td></tr><tr><td><code>&lt;rundir&gt;/VTK/.../internal.vtu</code></td><td>Volume fields for ParaView; present only when <code>volume=True</code> / <code>--volume</code></td></tr><tr><td><code>&lt;rundir&gt;/VTK/.../boundary/*.vtp</code></td><td>Patches including the wall (<code>body.vtp</code>, <code>plane.vtp</code>, …) and <code>farfield.vtp</code></td></tr><tr><td><code>&lt;out&gt;/summaries.jsonl</code></td><td>One <code>summary.json</code> object per line</td></tr><tr><td><code>&lt;out&gt;/summary.csv</code></td><td>Short spreadsheet: geometry, status, Cl, Cd, L/D, forces, y+, surface</td></tr><tr><td><code>&lt;rundir&gt;/report.txt</code></td><td>Long human-readable write-up</td></tr><tr><td><code>&lt;rundir&gt;/history.csv</code></td><td>One row per iteration: <code>iteration</code>, <code>p</code>, <code>Ux</code>, <code>Uy</code>, <code>Uz</code>, <code>k</code>, <code>omega</code>, <code>Cl</code>, <code>Cd</code></td></tr><tr><td><code>&lt;rundir&gt;/history.svg</code></td><td>Worst residual ratio and Cl versus iteration</td></tr><tr><td><code>&lt;out&gt;/polar.csv</code></td><td>One row per angle after <code>sweep</code> or <code>write_polar</code>: <code>aoa_deg</code>, <code>Cl</code>, <code>Cd</code>, <code>L_over_D</code>, <code>status</code>, <code>mach</code>, <code>yplus_pass</code>, <code>run</code></td></tr><tr><td><code>&lt;out&gt;/polar.svg</code></td><td>Cl and Cd versus angle</td></tr><tr><td><code>&lt;rundir&gt;/case_meta.env</code></td><td>Machine-readable run metadata</td></tr><tr><td><code>&lt;rundir&gt;/spanwise_cl.csv</code></td><td>Plane only. Columns <code>y_m</code>, <code>Cl</code>, <code>Cd</code> (each bin’s contribution to the aircraft coefficient)</td></tr><tr><td><code>&lt;rundir&gt;/axial_load.csv</code></td><td>Rocket only. Columns <code>x_m</code>, <code>CA</code>, <code>CN</code></td></tr><tr><td><code>&lt;out&gt;/results.csv</code></td><td>All converged runs</td></tr><tr><td><code>&lt;out&gt;/results_partial.csv</code></td><td>Interrupted or partial runs</td></tr></tbody></table></div>
+<p>Lower-level helpers in <code>cfd.report</code> (e.g. <code>load_meta</code>, <code>find_surface_vtp</code>, <code>find_volume_vtu</code>) are available for custom tooling but are not part of the stable <code>cfd</code> package surface.</p>
+<h2 id="vtk-and-paraview">VTK and ParaView</h2>
+<p>After a successful solve (or a partial run with <code>write_on_exit</code>), the driver runs <code>foamToVTK -latestTime</code> unless <code>results_only</code> is set. The API does not launch ParaView except when <code>open_pv=True</code> (<code>-p</code>), which opens the wall surface from <code>summary.json</code> → <code>files.surface</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>Use case</th><th>Config</th><th>What to open</th></tr></thead><tbody><tr><td>Wall Cp, y+, pressure</td><td>default (wall VTK kept)</td><td><code>read_run(rundir).row[&quot;files&quot;][&quot;surface&quot;]</code> or <code>./view-case.sh &lt;rundir&gt;</code></td></tr><tr><td>Slices, streamlines, \</td><td>U\</td><td>in the volume</td><td><code>volume=True</code></td><td><code>read_run(rundir).row[&quot;files&quot;][&quot;volume&quot;]</code>, or <code>VTK/*.vtm</code> (multiblock: internal + boundary)</td></tr><tr><td>Numbers only, no VTK</td><td><code>results_only=True</code></td><td>No <code>VTK/</code> tree</td></tr></tbody></table></div>
+<p>Example: resolve paths after a volume run without re-solving:</p>
+<pre><code>import glob
+import os
+from cfd import list_runs, read_run
+from cfd.report import find_volume_vtu
+
+rundir = list_runs(&quot;./plane_cfd&quot;)[-1]
+run = read_run(rundir)
+files = run.row.get(&quot;files&quot;) or {}
+wall = os.path.join(rundir, files[&quot;surface&quot;])
+vol_rel = files.get(&quot;volume&quot;) or find_volume_vtu(rundir)
+volume = os.path.join(rundir, vol_rel) if vol_rel else &quot;&quot;
+vtm = glob.glob(os.path.join(rundir, &quot;VTK&quot;, &quot;*.vtm&quot;))
+print(wall, volume or (vtm[0] if vtm else &quot;no volume — run with volume=True&quot;))</code></pre>
+<p><code>files.volume</code> is <code>null</code> when the run did not use <code>volume=True</code> or when <code>internal.vtu</code> was dropped after export. Streamlines, <strong>Slice</strong>, <strong>Clip</strong>, and <strong>Stream Tracer</strong> need the volume file. Slice normals, origins, and stream seeding are in <a href="index.html#analyzing-results-in-paraview">README.md — Analyzing results in ParaView</a> and <a href="index.html#slices-through-the-flow">Slices through the flow</a>.</p>
+<h2 id="results-csv-columns">Results CSV columns</h2>
+<p>Aggregate and per-run <code>results.csv</code> files share this header (older partial files may omit newer columns):</p>
+<p><code>geometry</code>, <code>AoA_deg</code>, <code>speed_ms</code>, <code>Re</code>, <code>Mach</code>, <code>area_m2</code>, <code>MAC_m</code>, <code>CofR_x_m</code>, <code>CofR_y_m</code>, <code>CofR_z_m</code>, <code>iterations</code>, <code>max_iterations</code>, <code>iter_budget_pct</code>, <code>residual_worst_field</code>, <code>residual_worst_ratio</code>, <code>residual_last_met</code>, <code>Cl</code>, <code>sigma_Cl</code>, <code>Cd</code>, <code>sigma_Cd</code>, <code>Cs</code>, <code>sigma_Cs</code>, <code>CmPitch</code>, <code>sigma_Cm</code>, <code>CmRoll</code>, <code>sigma_CmRoll</code>, <code>CmYaw</code>, <code>sigma_CmYaw</code>, <code>Cl_p</code>, <code>Cl_v</code>, <code>Cd_p</code>, <code>Cd_v</code>, <code>L_over_D</code>, <code>lift_N</code>, <code>drag_N</code>, <code>moment_pitch_Nm</code>, <code>yplus_min</code>, <code>yplus_max</code>, <code>yplus_avg</code>, <code>yplus_pass</code>, <code>cells</code>, <code>nonortho_max</code>, <code>skew_max</code>, <code>converged</code>, <code>scheme</code>, <code>refs</code>, <code>profile</code>, <code>solver</code>, <code>alt_m</code>, <code>CA</code>, <code>CN</code>, <code>x_cp_m</code>, <code>static_margin</code>.</p>
+<p>Values are strings (as written by CSV); use <code>float()</code> where needed. Rocket-only columns <code>CA</code>, <code>CN</code>, <code>x_cp_m</code>, <code>static_margin</code> are blank for plane and body runs.</p>
+<div class="table-wrap"><table><thead><tr><th>Column</th><th>Meaning</th></tr></thead><tbody><tr><td><code>geometry</code></td><td>STL basename, <code>builtin&lt;span&gt;ft</code>, or <code>rocket_&lt;hash&gt;</code></td></tr><tr><td><code>AoA_deg</code>, <code>speed_ms</code>, <code>alt_m</code>, <code>Mach</code></td><td>Flight condition. <code>Mach</code> uses ISA speed of sound at <code>alt_m</code>.</td></tr><tr><td><code>Re</code></td><td>Reynolds number on MAC (plane), diameter (rocket), or x-length (body)</td></tr><tr><td><code>area_m2</code>, <code>MAC_m</code></td><td>Reference area and length. <code>MAC_m</code> is the MAC, rocket <code>Lref</code>, or body length.</td></tr><tr><td><code>CofR_x_m</code>, <code>CofR_y_m</code>, <code>CofR_z_m</code></td><td>Moment center, metres</td></tr><tr><td><code>iterations</code></td><td>Last completed SIMPLE iteration</td></tr><tr><td><code>max_iterations</code></td><td>The <code>ITERS</code> / <code>-i</code> cap</td></tr><tr><td><code>iter_budget_pct</code></td><td><code>100 * iterations / max_iterations</code></td></tr><tr><td><code>residual_worst_field</code></td><td>Field with the largest residual/target on the last iteration (<code>p</code>, <code>Ux</code>, <code>k</code>, …)</td></tr><tr><td><code>residual_worst_ratio</code></td><td>That residual divided by its <code>residualControl</code> target. Below <code>1.0</code> meets the target.</td></tr><tr><td><code>residual_last_met</code></td><td><code>yes</code> when every monitored field was under its target on the last iteration</td></tr><tr><td><code>Cl</code>, <code>Cd</code>, <code>Cs</code>, <code>CmPitch</code>, <code>CmRoll</code>, <code>CmYaw</code></td><td><strong>Mean</strong> over the reporting window (converged iterations, otherwise the tail of the history). In <code>report.txt</code> these appear as <strong>mean ± sample std dev</strong>.</td></tr><tr><td><code>sigma_*</code></td><td><strong>Sample standard deviation</strong> paired with the mean column (<code>sigma_Cl</code> with <code>Cl</code>, etc.) on the same window. Iteration scatter, not mesh or experimental uncertainty. Empty when <code>report_scatter</code> is false.</td></tr><tr><td><code>Cl_p</code>, <code>Cd_p</code></td><td>Pressure part of Cl and Cd</td></tr><tr><td><code>Cl_v</code>, <code>Cd_v</code></td><td>Viscous part of Cl and Cd</td></tr><tr><td><code>L_over_D</code>, <code>lift_N</code>, <code>drag_N</code>, <code>moment_pitch_Nm</code></td><td>Lift-to-drag and forces in newtons / newton-metres</td></tr><tr><td><code>yplus_min</code>, <code>yplus_max</code>, <code>yplus_avg</code></td><td>Wall y+</td></tr><tr><td><code>yplus_pass</code></td><td><code>yes</code> when averages sit in 30–300 and the minimum is at least 11</td></tr><tr><td><code>cells</code>, <code>nonortho_max</code>, <code>skew_max</code></td><td>From <code>checkMesh</code></td></tr><tr><td><code>converged</code></td><td><code>yes</code> (residuals), <code>no</code> (hit the iteration cap), or <code>partial</code></td></tr><tr><td><code>scheme</code></td><td><code>limitedLinear</code> or <code>upwind</code></td></tr><tr><td><code>refs</code></td><td>How area and length were chosen (<code>ref_source</code> in <code>case_meta.env</code>)</td></tr><tr><td><code>profile</code>, <code>solver</code></td><td><code>plane</code> / <code>rocket</code> / <code>body</code>, and <code>simple</code> or <code>rho</code></td></tr><tr><td><code>CA</code>, <code>CN</code></td><td>Rocket body axes: <code>CA = Cd cos α − Cl sin α</code>, <code>CN = Cd sin α + Cl cos α</code> (+x aft, +z up)</td></tr><tr><td><code>x_cp_m</code></td><td><code>x_cg − Cm Lref / CN</code>. Blank when CN is about zero.</td></tr><tr><td><code>static_margin</code></td><td><code>(x_cp − x_cg) / D</code> in calibers. Positive means the center of pressure is aft of the moment center.</td></tr></tbody></table></div>
+<h2 id="case_metaenv-keys-selection"><span id="case_metaenv-keys"></span><code>case_meta.env</code> keys (selection)</h2>
+<p>Written under each run directory; keys are uppercase strings:</p>
+<div class="table-wrap"><table><thead><tr><th>Key</th><th>Meaning</th></tr></thead><tbody><tr><td><code>PROFILE</code>, <code>GEOMETRY</code></td><td>Profile and geometry name</td></tr><tr><td><code>SOLVER</code>, <code>SOLVER_NAME</code>, <code>COMPRESSIBLE</code></td><td><code>simple</code> or <code>rho</code>, application name, <code>1</code> if compressible</td></tr><tr><td><code>AOA</code>, <code>SPEED</code>, <code>ALT_M</code>, <code>MACH</code>, <code>RE</code>, <code>RE_LABEL</code></td><td>Condition. <code>RE_LABEL</code> is <code>Re_MAC</code>, <code>Re_D</code>, or <code>Re_L</code>.</td></tr><tr><td><code>RHO</code>, <code>NU</code></td><td>ISA density and kinematic viscosity</td></tr><tr><td><code>REF_AREA</code>, <code>REF_CHORD</code>, <code>REF_XCG</code>, <code>REF_YCG</code>, <code>REF_ZCG</code>, <code>REF_DIAMETER</code></td><td>References used by the force objects</td></tr><tr><td><code>REF_SOURCE</code>, <code>REF_OVERRIDE</code></td><td>Where the reference came from, and whether an override replaced it</td></tr><tr><td><code>CG_DEFAULT</code></td><td><code>1</code> when a rocket moment center is still mid-length</td></tr><tr><td><code>COMPUTED_AREA</code>, <code>COMPUTED_CHORD</code>, <code>COMPUTED_XCG</code></td><td>STL estimate before overrides</td></tr><tr><td><code>TURB_INT</code>, <code>K_INF</code>, <code>W_INF</code></td><td>Freestream turbulence</td></tr><tr><td><code>LVL</code>, <code>LVL_FIRST</code>, <code>SURF_DX</code>, <code>LAYERS</code>, <code>CELL_EST</code>, <code>CAP_HIT</code></td><td>Mesh. <code>LVL_FIRST</code> is the level before a y+ remesh.</td></tr><tr><td><code>TARGET_YPLUS</code>, <code>PRED_YPLUS</code>, <code>YP_RETRIED</code>, <code>YP_PASS</code></td><td>Wall spacing and whether the y+ check passed</td></tr><tr><td><code>ITERS</code>, <code>SCHEME</code>, <code>STOP</code>, <code>PARTIAL</code></td><td>Iteration cap and solve outcome</td></tr><tr><td><code>P_TOL</code>, <code>U_TOL</code>, <code>K_TOL</code></td><td>SIMPLE residual targets (<code>1e-5</code>, <code>1e-6</code>, <code>1e-6</code>)</td></tr><tr><td><code>LIFT_X</code>, <code>LIFT_Z</code>, <code>DRAG_X</code>, <code>DRAG_Z</code></td><td>Lift and drag unit-vector components in x and z</td></tr><tr><td><code>LOG</code>, <code>CHECKMESH</code></td><td>Paths to the solver log and <code>log.checkMesh</code></td></tr></tbody></table></div>
+<p>Use <code>read_run</code> or <code>cfd.report.load_meta(path)</code> to parse.</p>
+<h2 id="profiles">Profiles</h2>
+<div class="table-wrap"><table><thead><tr><th>Profile</th><th>Config</th><th>STL</th><th>Notes</th></tr></thead><tbody><tr><td>Plane</td><td><code>config/plane.conf</code></td><td>Optional (built-in 3 ft default)</td><td><code>span_ft</code> for built-in</td></tr><tr><td>Rocket</td><td><code>config/rocket.conf</code></td><td>Optional (built-in example)</td><td><code>BODY_*</code>, <code>FIN_*</code>, <code>NOSE</code></td></tr><tr><td>Body</td><td><code>config/body.conf</code></td><td><strong>Required</strong></td><td>Arbitrary watertight STL</td></tr></tbody></table></div>
+<p>Same coordinate system and outputs as the CLI; see <a href="index.html">README.md</a>.</p>
+<h2 id="sweep">Sweep</h2>
+<p><code>sweep(cfg, aoas)</code> calls <code>run</code> once per angle, in order, into <code>cfg.out</code>. Mesh sizing does not depend on angle, so the mesh built for the first angle is reused. <code>cfg.aoa</code> is restored when the call returns. <code>cfg.remesh</code> follows <code>run</code>: the first angle may rebuild, and later angles reuse.</p>
+<p>If one angle calls <code>die()</code> (process exit status 1), that angle is stored as status <code>failed</code> and the sweep continues. Ctrl+C (status 130) still stops the process. After the loop, <code>polar.csv</code> and <code>polar.svg</code> are written in the output folder. The last <code>summaries.jsonl</code> record for each angle wins. Failed angles from this call replace that record.</p>
+<p><code>print_only=True</code> prints each flight condition and does not write the polar.</p>
+<pre><code>from cfd import make_config, sweep, write_polar
+
+cfg = make_config(&quot;config/plane.conf&quot;, out=&quot;./sweep_cfd&quot;, speed=20.0)
+sweep(cfg, [0, 2, 4, 6])
+write_polar(&quot;./sweep_cfd&quot;)  # same files, from summaries already on disk</code></pre>
+<p><code>write_polar(out_dir)</code> reads <code>summaries.jsonl</code> only. It does not mesh or solve. An empty folder still gets a header-only <code>polar.csv</code>.</p>
+<p>CLI: <code>--aoas 0,2,4,6</code> is <code>sweep</code>. <code>--polar</code> is <code>write_polar</code> and does not start OpenFOAM or Docker. Pass either <code>-a</code> or <code>--aoas</code>.</p>
+<h2 id="batch-and-parametric-studies">Batch and parametric studies</h2>
+<pre><code>from cfd import make_config, run, read_results
+
+base = &quot;config/plane.conf&quot;
+out = &quot;./sweep_cfd&quot;
+
+for aoa in (0, 2, 4, 6):
+    cfg = make_config(base, out=out, aoa=float(aoa), speed=20.0)
+    run(cfg)
+
+table = read_results(out)
+by_aoa = {r[&quot;flight&quot;][&quot;aoa_deg&quot;]: r[&quot;coefficients&quot;][&quot;Cl&quot;] for r in table}</code></pre>
+<p>Meshes are reused when geometry, level, and layer count match (same rules as the shell scripts). Pass <code>remesh=True</code> to force regeneration. For angles, prefer <code>sweep</code> so a failed angle does not exit the interpreter and so <code>polar.csv</code> is written for you. A speed or altitude loop can change the mesh level, because y+ depends on Reynolds number.</p>
+<h2 id="cli-equivalence">CLI equivalence</h2>
+<div class="table-wrap"><table><thead><tr><th>CLI</th><th>Python</th></tr></thead><tbody><tr><td><code>./plane-foam.sh -a 6 -v 18</code></td><td><code>make_config(&quot;config/plane.conf&quot;, aoa=6, speed=18)</code> then <code>run(cfg)</code></td></tr><tr><td><code>-i 3000</code>, <code>--max-iterations 3000</code></td><td><code>iters=3000</code> or <code>max_iterations=3000</code></td></tr><tr><td><code>./foam.sh --config config/body.conf -s wing.stl</code></td><td><code>make_config(&quot;config/body.conf&quot;, stl=&quot;wing.stl&quot;)</code></td></tr><tr><td><code>--print</code></td><td><code>print_only=True</code> on config, then <code>run(cfg)</code>. Does not start Docker</td></tr><tr><td><code>--aoas 0,2,4,6</code></td><td><code>sweep(cfg, [0, 2, 4, 6])</code></td></tr><tr><td><code>--polar</code></td><td><code>write_polar(cfg.out)</code>. Does not start Docker</td></tr><tr><td><code>--smoke</code></td><td><code>smoke=True</code> (coarse, 80 iterations, 1 rank, 0 layers)</td></tr><tr><td><code>--volume</code></td><td><code>volume=True</code> (keep <code>internal.vtu</code> for ParaView volume views)</td></tr><tr><td><code>-m</code></td><td><code>remesh=True</code></td></tr><tr><td><code>-w</code></td><td><code>write_on_exit=True</code></td></tr><tr><td><code>-p</code></td><td><code>open_pv=True</code> (opens the wall <code>.vtp</code>)</td></tr><tr><td><code>python3 -m cfd …</code></td><td><code>resolve([...])</code> then <code>run(cfg)</code></td></tr></tbody></table></div>
+<h2 id="other-modules">Other modules</h2>
+<p>The names in <a href="#public-exports">Public exports</a> are the stable surface. These modules are the same code the driver uses. They stay on the standard library and call <code>die()</code> on bad input.</p>
+<div class="table-wrap"><table><thead><tr><th>Module</th><th>Call it for</th></tr></thead><tbody><tr><td><code>cfd.aero</code></td><td>ISA air, the Mach switch, CA / CN, center of pressure. No OpenFOAM.</td></tr><tr><td><code>cfd.config</code></td><td><code>resolve</code>, <code>from_mapping</code>, <code>Config</code></td></tr><tr><td><code>cfd.geom</code></td><td>Built-in plane and rocket STLs, cleanup, reference area</td></tr><tr><td><code>cfd.report</code></td><td><code>load_meta</code>, <code>find_surface_vtp</code>, <code>find_volume_vtu</code>, <code>write_history</code>, <code>write_polar</code>, and <code>report()</code> to rebuild <code>summary.json</code>, <code>report.txt</code>, <code>history.csv</code>, and <code>results.csv</code> from an existing case</td></tr><tr><td><code>cfd.env</code></td><td>OpenFOAM discovery and the Docker re-exec used by <code>python3 -m cfd</code></td></tr><tr><td><code>cfd.cli</code></td><td><code>main(argv)</code> — what <code>python3 -m cfd</code> runs</td></tr></tbody></table></div>
+<p>Atmosphere and rocket coefficients without a solve:</p>
+<pre><code>from cfd.aero import isa, choose_solver, body_coeffs, center_of_pressure, static_margin
+
+air = isa(1500)                              # T, p, rho, mu, nu, a
+kind, transonic = choose_solver(0.25, &quot;auto&quot;)  # (&quot;simple&quot;, False)
+ca, cn = body_coeffs(cd=0.4, cl=0.1, aoa_deg=2.0)
+x_cp = center_of_pressure(x_cg=0.5, cm=-0.2, lref=0.1, cn=cn)  # None if CN ~ 0
+margin = static_margin(x_cp, x_cg=0.5, diameter=0.1)</code></pre>
+<p><code>choose_solver(mach, &quot;simple&quot;)</code> raises <code>ValueError</code> above Mach 0.3. <code>plan</code> and <code>run</code> turn that into <code>die()</code>.</p>
+<p>Rebuild a report from a finished run folder (does not re-solve):</p>
+<pre><code>from cfd.report import report
+
+report(
+    &quot;plane_cfd/run_&lt;name&gt;_lvl&lt;L&gt;_aoa&lt;A&gt;_v&lt;V&gt;&quot;,
+    &quot;plane_cfd/run_&lt;name&gt;_lvl&lt;L&gt;_aoa&lt;A&gt;_v&lt;V&gt;/case_meta.env&quot;,
+    &quot;plane_cfd/results.csv&quot;,
+)</code></pre>
+<p><code>cfd.mesh.build_mesh</code>, <code>cfd.case.write_case</code>, and <code>cfd.solve.solve_case</code> are the three steps inside <code>run</code>. Call <code>run</code> unless you are changing how those dictionaries are written.</p>
+<h2 id="tests">Tests</h2>
+<p>API helpers that do not need OpenFOAM:</p>
+<pre><code>python3 -m unittest tests.test_cfd</code></pre>
+<p><code>ApiTest</code> covers <code>make_config</code>, <code>read_results</code> on <code>summaries.jsonl</code>, and the wide-CSV fallback in <code>tests/data/</code>.</p>
+<h2 id="errors">Errors</h2>
+<p>Configuration and setup errors call <code>cfd.proc.die()</code>, which prints a message and exits with status 1. There is no exception-based error API today; run scripts in a subprocess if you need to catch failures without exiting your interpreter. <code>sweep</code> is the exception: it catches status 1 from one angle, records <code>failed</code> in <code>polar.csv</code>, and continues. Status 130 from Ctrl+C still exits.</p>
+</main>
+</div>
+</body>
+</html>

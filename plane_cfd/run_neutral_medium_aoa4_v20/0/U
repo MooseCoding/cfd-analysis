@@ -1,0 +1,15 @@
+FoamFile
+{
+    version 2.0;
+    format ascii;
+    class volVectorField;
+    object U;
+}
+
+dimensions [0 1 -1 0 0 0 0];
+internalField uniform (19.951281005196485 0 1.395129474882506);
+boundaryField
+{
+    farfield { type freestreamVelocity; freestreamValue uniform (19.951281005196485 0 1.395129474882506); value uniform (19.951281005196485 0 1.395129474882506); }
+    "plane.*" { type noSlip; }
+}

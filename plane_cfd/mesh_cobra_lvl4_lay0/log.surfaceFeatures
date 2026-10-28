@@ -1,0 +1,106 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2512                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _87ed40d256-20251219 OPENFOAM=2512 version=v2512
+Arch   : "LSB;label=32;scalar=64"
+Exec   : surfaceFeatureExtract
+Date   : Oct 28 2026
+Time   : 02:24:21
+Host   : MooseCodings-MacBook-Pro.local
+PID    : 89523
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+I/O    : uncollated
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+Case   : /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/mesh_cobra_lvl4_lay0
+nProcs : 1
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+memory pool : not available
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+
+Note: Feature line extraction only valid on closed manifold surfaces
+
+Reading surfaceFeatureExtractDict
+
+Surfaces     : body.stl
+Output       : body
+Load options : offset
+Write options: writeObj=no writeVTK=off
+
+Statistics:
+Triangles    : 318138 in 1 region(s)
+Vertices     : 162092
+Bounding Box : (0.085 -0.44977 -0.0498869) (0.947186 0.44977 0.180282)
+
+Constructing feature set from included angle 150
+Selecting edges based purely on geometric tests: no
+Removing all non-manifold edges (edges with > 2 connected faces) unless they cross multiple regions
+
+Initial Feature set:
+    points : 20462
+    edges  : 70221
+    of which
+        region edges   : 15782
+        external edges : 17702
+        internal edges : 36737
+--> FOAM Warning : 
+    From static Foam::labelListList Foam::PatchTools::sortedPointEdges(const PrimitivePatch<FaceList, PointField> &) [FaceList = Foam::List<Foam::labelledTri>, PointField = Foam::Field<Foam::Vector<double>>]
+    in file /Volumes/OpenFOAM-v2512/src/OpenFOAM/lnInclude/PatchToolsSortPoints.C at line 129
+    Cannot find all original edges in the new list
+    Original pointEdges = 5(355592 355594 355595 425873 478177)
+    New pointEdges = 5(355592 425873 355595 355594 425873)
+--> FOAM Warning : 
+    From static Foam::labelListList Foam::PatchTools::sortedPointEdges(const PrimitivePatch<FaceList, PointField> &) [FaceList = Foam::List<Foam::labelledTri>, PointField = Foam::Field<Foam::Vector<double>>]
+    in file /Volumes/OpenFOAM-v2512/src/OpenFOAM/lnInclude/PatchToolsSortPoints.C at line 109
+    Unable to order pointEdges as the face connections are not circular
+    Original pointEdges = 8(392175 392176 392177 392179 392195 392199 392444 478911)
+    New pointEdges = 9(392175 392179 392444 392199 392195 392177 392176 392195 392199)
+--> FOAM Warning : 
+    From static Foam::labelListList Foam::PatchTools::sortedPointEdges(const PrimitivePatch<FaceList, PointField> &) [FaceList = Foam::List<Foam::labelledTri>, PointField = Foam::Field<Foam::Vector<double>>]
+    in file /Volumes/OpenFOAM-v2512/src/OpenFOAM/lnInclude/PatchToolsSortPoints.C at line 109
+    Unable to order pointEdges as the face connections are not circular
+    Original pointEdges = 5(418659 418661 418662 421774 480176)
+    New pointEdges = 6(418659 421774 418662 418661 418662 418661)
+--> FOAM Warning : 
+    From static Foam::labelListList Foam::PatchTools::sortedPointEdges(const PrimitivePatch<FaceList, PointField> &) [FaceList = Foam::List<Foam::labelledTri>, PointField = Foam::Field<Foam::Vector<double>>]
+    in file /Volumes/OpenFOAM-v2512/src/OpenFOAM/lnInclude/PatchToolsSortPoints.C at line 129
+    Cannot find all original edges in the new list
+    Original pointEdges = 5(418888 418891 418892 422767 480220)
+    New pointEdges = 5(418888 422767 418892 418891 422767)
+
+Final Feature set:
+    points : 57120
+    of which
+        convex             : 1056
+        concave            : 3460
+        mixed              : 15946
+        non-feature        : 36658
+    edges  : 70221
+    of which
+        external edges     : 17849
+        internal edges     : 36590
+        flat edges         : 0
+        open edges         : 14398
+        multiply connected : 1384
+
+Writing extendedFeatureEdgeMesh to "/Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/mesh_cobra_lvl4_lay0/constant/extendedFeatureEdgeMesh/body.extendedFeatureEdgeMesh"
+
+Writing featureEdgeMesh to "/Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/mesh_cobra_lvl4_lay0/constant/triSurface/body.eMesh"
+ExecutionTime = 0.45 s  ClockTime = 0 s
+
+End
+

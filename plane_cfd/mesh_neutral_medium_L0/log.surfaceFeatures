@@ -1,0 +1,74 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2512                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _87ed40d256-20251219 OPENFOAM=2512 version=v2512
+Arch   : "LSB;label=32;scalar=64"
+Exec   : surfaceFeatureExtract
+Date   : Oct 21 2026
+Time   : 20:38:43
+Host   : MooseCodings-MacBook-Pro.local
+PID    : 75007
+I/O    : uncollated
+Case   : /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/mesh_neutral_medium_L0
+nProcs : 1
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+memory pool : not available
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+
+Note: Feature line extraction only valid on closed manifold surfaces
+
+Reading surfaceFeatureExtractDict
+
+Surfaces     : plane.stl
+Output       : plane
+Load options : offset
+Write options: writeObj=no writeVTK=off
+
+Statistics:
+Triangles    : 327788 in 1 region(s)
+Vertices     : 162328
+Bounding Box : (0.085 -0.44977 -0.0498869) (0.947186 0.44977 0.180282)
+
+Constructing feature set from included angle 150
+Selecting edges based purely on geometric tests: no
+Removing all non-manifold edges (edges with > 2 connected faces) unless they cross multiple regions
+
+Initial Feature set:
+    points : 17335
+    edges  : 68797
+    of which
+        region edges   : 6206
+        external edges : 19803
+        internal edges : 42788
+
+Final Feature set:
+    points : 56253
+    of which
+        convex             : 1427
+        concave            : 4584
+        mixed              : 11324
+        non-feature        : 38918
+    edges  : 68797
+    of which
+        external edges     : 20049
+        internal edges     : 42542
+        flat edges         : 0
+        open edges         : 1034
+        multiply connected : 5172
+
+Writing extendedFeatureEdgeMesh to "/Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/mesh_neutral_medium_L0/constant/extendedFeatureEdgeMesh/plane.extendedFeatureEdgeMesh"
+
+Writing featureEdgeMesh to "/Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/mesh_neutral_medium_L0/constant/triSurface/plane.eMesh"
+ExecutionTime = 0.39 s  ClockTime = 1 s
+
+End
+

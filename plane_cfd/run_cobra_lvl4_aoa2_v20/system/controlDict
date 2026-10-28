@@ -1,0 +1,159 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+
+application     simpleFoam;
+startFrom       startTime;
+startTime       0;
+stopAt          endTime;
+endTime         1000;
+deltaT          1;
+writeControl    timeStep;
+writeInterval   250;
+purgeWrite      2;
+writeFormat     binary;
+writePrecision  8;
+writeCompression off;
+timeFormat      general;
+timePrecision   6;
+runTimeModifiable true;
+
+functions
+{
+    forceCoeffs1
+    {
+        type            forceCoeffs;
+        libs            ("libforces.so");
+        log             false;
+        writeControl    timeStep;
+        writeInterval   1;
+        patches         ("body.*");
+        rho             rhoInf;
+        rhoInf          1.2249781;
+        liftDir         (-0.034899 0.000000 0.999391);
+        dragDir         (0.999391 0.000000 0.034899);
+        CofR            (0.466166 0.000000 -0.011404);
+        pitchAxis       (0 1 0);
+        magUInf         20;
+        lRef            0.19001578;
+        Aref            0.10648923;
+    }
+
+    forces1
+    {
+        type            forces;
+        libs            ("libforces.so");
+        log             false;
+        writeControl    timeStep;
+        writeInterval   1;
+        patches         ("body.*");
+        rho             rhoInf;
+        rhoInf          1.2249781;
+        CofR            (0.466166 0.000000 -0.011404);
+    }
+
+    coeff_body
+    {
+        type            forceCoeffs;
+        libs            ("libforces.so");
+        log             false;
+        writeControl    timeStep;
+        writeInterval   1;
+        patches         (body);
+        rho             rhoInf;
+        rhoInf          1.2249781;
+        liftDir         (-0.034899 0.000000 0.999391);
+        dragDir         (0.999391 0.000000 0.034899);
+        CofR            (0.466166 0.000000 -0.011404);
+        pitchAxis       (0 1 0);
+        magUInf         20;
+        lRef            0.19001578;
+        Aref            0.10648923;
+    }
+
+    spanForces
+    {
+        type            forces;
+        libs            ("libforces.so");
+        log             false;
+        writeControl    timeStep;
+        writeInterval   1;
+        patches         ("body.*");
+        rho             rhoInf;
+        rhoInf          1.2249781;
+        CofR            (0.466166 0.000000 -0.011404);
+    }
+
+    spanLoad
+    {
+        type            binField;
+        libs            ("libfieldFunctionObjects.so");
+        log             false;
+        writeControl    timeStep;
+        writeInterval   1;
+        binModel        singleDirectionUniformBin;
+        fields          (force);
+        patches         ("body.*");
+        CofR            (0.466166 0.000000 -0.011404);
+        binData
+        {
+            nBin        40;
+            direction   (0 1 0);
+            cumulative  no;
+        }
+    }
+
+    codedCp
+    {
+        type            coded;
+        libs            ("libutilityFunctionObjects.so");
+        name            CpField;
+        writeControl    writeTime;
+        codeExecute
+        #{
+            auto* CpPtr = mesh().getObjectPtr<volScalarField>("Cp");
+            if (!CpPtr)
+            {
+                CpPtr = new volScalarField
+                (
+                    IOobject
+                    (
+                        "Cp",
+                        mesh().time().timeName(),
+                        mesh(),
+                        IOobject::NO_READ,
+                        IOobject::AUTO_WRITE,
+                        IOobject::REGISTER
+                    ),
+                    mesh(),
+                    dimensionedScalar(dimless, Zero)
+                );
+                regIOobject::store(CpPtr);
+            }
+            const auto& p = mesh().lookupObject<volScalarField>("p");
+            const dimensionedScalar q("q", p.dimensions(), 200);
+            *CpPtr = p/q;
+        #};
+    }
+
+    yPlus1
+    {
+        type            yPlus;
+        libs            ("libfieldFunctionObjects.so");
+        log             false;
+        writeControl    writeTime;
+    }
+
+    wallShear1
+    {
+        type            wallShearStress;
+        libs            ("libfieldFunctionObjects.so");
+        log             false;
+        writeControl    writeTime;
+        patches         ("body.*");
+    }
+}

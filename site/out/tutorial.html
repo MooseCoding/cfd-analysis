@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutorial</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<a class="brand" href="index.html">External-flow CFD</a>
+<nav>
+<a href="index.html">Guide</a>
+<a href="tutorial.html" class="active">Tutorial</a>
+<a href="concepts.html">Concepts</a>
+<a href="mesh.html">Mesh</a>
+<a href="troubleshooting.html">Troubleshoot</a>
+<a href="pipeline.html">Pipeline</a>
+<a href="api.html">API</a>
+</nav>
+</header>
+<div class="layout">
+<nav class="toc">
+<p class="toc-label">Contents</p>
+<a href="#before-a-solve">Before a solve</a>
+<a href="#first-smoke-run">First smoke run</a>
+<a href="#read-the-numbers">Read the numbers</a>
+<a href="#angle-sweep">Angle sweep</a>
+<a href="#built-in-rocket">Built-in rocket</a>
+<a href="#an-stl-including-a-cobra-airframe">An STL, including a Cobra airframe</a>
+<a href="#python-without-openfoam">Python, without OpenFOAM</a>
+</nav>
+<main>
+<h1 id="tutorial">Tutorial</h1>
+<p>This walkthrough stays on the built-in shapes until the last section. <code>--print</code> and <code>plan()</code> do not mesh or solve. A real solve needs OpenFOAM or Docker, as described in the <a href="index.html#requirements">guide</a>.</p>
+<p>The formulas behind the numbers are in <a href="concepts.html">Concepts</a>. How the mesh is sized is in <a href="mesh.html">Mesh</a>. When a run stops, use <a href="troubleshooting.html">Troubleshooting</a>.</p>
+<h2 id="before-a-solve">Before a solve</h2>
+<p>From the repository root:</p>
+<pre><code>./plane-foam.sh --print</code></pre>
+<p>That prints the profile, angle, speed, altitude, Mach, Reynolds number, solver, reference area, reference length, and moment center. The built-in plane aims at a 3 ft span. Mach at the shipped 20 m/s, sea-level condition is about 0.059, so the solver is <code>simpleFoam</code>.</p>
+<p>Change one value for that print without editing the file:</p>
+<pre><code>./plane-foam.sh --print -a 6 -v 18</code></pre>
+<p>The same check from Python, still with no OpenFOAM call:</p>
+<pre><code>python3 EXAMPLE_PYTHON_API.py</code></pre>
+<h2 id="first-smoke-run">First smoke run</h2>
+<pre><code>./plane-foam.sh --smoke</code></pre>
+<p><code>--smoke</code> forces a coarse mesh, 80 iterations, 1 rank, and no prism layers. It is the short first solve. A later <code>./plane-foam.sh</code> without <code>--smoke</code> uses the config again (<code>ITERS</code> 2000, <code>MAX_COMPUTE</code> medium).</p>
+<p>The run writes under <code>plane_cfd/</code>:</p>
+<div class="table-wrap"><table><thead><tr><th>Path</th><th>What it is</th></tr></thead><tbody><tr><td><code>geom_builtin3ft/body.stl</code></td><td>Cleaned surface</td></tr><tr><td><code>mesh_builtin3ft_lvl3_lay0/</code></td><td>Mesh cache for this level and layer count</td></tr><tr><td><code>run_builtin3ft_lvl3_aoa4_v20/</code></td><td>This flight condition</td></tr><tr><td><code>summaries.jsonl</code>, <code>summary.csv</code></td><td>One line per finished run</td></tr></tbody></table></div>
+<p>Open the run folder's <code>summary.json</code> first. <code>./view-case.sh plane_cfd/run_builtin3ft_lvl3_aoa4_v20</code> opens the wall surface when ParaView is installed. Slice and streamline steps are in the <a href="index.html#analyzing-results-in-paraview">guide</a>.</p>
+<h2 id="read-the-numbers">Read the numbers</h2>
+<p><code>summary.json</code> is the short record. These fields are the ones to check before trusting a coefficient:</p>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Meaning</th></tr></thead><tbody><tr><td><code>status</code></td><td><code>converged</code>, <code>stopped</code>, or <code>partial</code></td></tr><tr><td><code>flight.aoa_deg</code>, <code>flight.speed_m_s</code>, <code>flight.mach</code></td><td>The condition that was solved</td></tr><tr><td><code>coefficients.Cl</code>, <code>coefficients.Cd</code>, <code>coefficients.L_over_D</code></td><td>Means over the reporting window</td></tr><tr><td><code>quality.yplus_pass</code></td><td>Wall functions in band</td></tr><tr><td><code>quality.iterations</code>, <code>quality.cells</code></td><td>Last iteration and <code>checkMesh</code> cell count</td></tr><tr><td><code>files.surface</code></td><td>Wall VTK, relative to the run folder</td></tr></tbody></table></div>
+<p><code>report.txt</code> in the same folder is the long write-up: reference source, residual targets, coefficient means, and y+ by patch. <code>history.csv</code> is Cl, Cd, and the initial residuals at every iteration. <code>history.svg</code> plots the worst residual ratio and Cl. Open the SVG in a browser.</p>
+<p><code>plane_cfd/summary.csv</code> is the spreadsheet of every run in that folder. The wide <code>results.csv</code> keeps the mean and the sample standard deviation in separate columns. What that deviation measures is in <a href="concepts.html#what-the-scatter-means">Concepts</a>.</p>
+<p><code>status</code> of <code>stopped</code> means the iteration cap was reached. <code>partial</code> means the run was interrupted and kept. <code>converged</code> means the solver reported that the residuals met their targets.</p>
+<h2 id="angle-sweep">Angle sweep</h2>
+<p>An angle change reuses the mesh. Speed and altitude can change the y+ target and start a new mesh, so the sweep flag is angles only.</p>
+<pre><code>./plane-foam.sh --smoke --aoas 0,2,4,6</code></pre>
+<p>Each angle gets its own <code>run_*_aoa*_v*</code> folder. When the loop finishes, <code>plane_cfd/polar.csv</code> and <code>plane_cfd/polar.svg</code> list Cl, Cd, and L/D against angle. One angle can fail and the others still finish; the failed angle is a row with status <code>failed</code>.</p>
+<p>Rebuild the polar from runs already on disk, with no solve:</p>
+<pre><code>./plane-foam.sh --polar</code></pre>
+<h2 id="built-in-rocket">Built-in rocket</h2>
+<pre><code>./rocket-foam.sh --print</code></pre>
+<p>The shipped rocket is an example: 0.1016 m diameter, 0.20 m ogive, 0.80 m tube, four fins. It is not a Cobra airframe. Reference area is the body cross-section. The moment center defaults to mid-length, about 0.50 m from the nose tip. Static margin is about that point until you set the real center of gravity:</p>
+<pre><code>./rocket-foam.sh --print -X 0.55</code></pre>
+<p><code>-X</code> is <code>REF_X</code> in <code>config/rocket.conf</code>. The report then prints CA, CN, center of pressure, and static margin in calibers. The definitions and a hand calculation are in <a href="concepts.html#a-worked-rocket-number">Concepts</a>.</p>
+<p><code>./rocket-foam.sh --smoke</code> is the short rocket solve. Axial load along x is <code>axial_load.csv</code> in the run folder when the bins were written.</p>
+<h2 id="an-stl-including-a-cobra-airframe">An STL, including a Cobra airframe</h2>
+<p>Any one watertight body uses <code>./foam.sh</code>. A rocket-shaped STL can also go through <code>./rocket-foam.sh -s</code>, which keeps the rocket reference (cross-section and diameter) instead of the frontal-area reference.</p>
+<pre><code>./foam.sh -s path/to/body.stl -u m --print
+./rocket-foam.sh -s path/to/cobra.stl -u m -X 0.40 --print</code></pre>
+<p>Coordinates on the STL are <strong>+x</strong> nose to tail, <strong>+y</strong> to the side, <strong>+z</strong> up. <code>-u</code> is required when more than one unit would put the body in a plausible size range. <code>-A</code>, <code>-C</code>, and <code>-X</code> override area, length, and the moment center when you already know them. Empty reference keys are computed from the surface, which is the wrong wing area if the file has no solid named like a wing.</p>
+<p>Name solids <code>nose</code>, <code>tube</code>, or <code>body</code> on a rocket STL so the diameter is taken from the tube and not from the fins. A solid whose name contains <code>wing</code> and not <code>tail</code> is the main wing for the plane profile.</p>
+<h2 id="python-without-openfoam">Python, without OpenFOAM</h2>
+<pre><code>from cfd import make_config, plan
+
+cfg = make_config(&quot;config/plane.conf&quot;, speed=18.0, aoa=6.0)
+info = plan(cfg)
+print(info[&quot;mach&quot;], info[&quot;solver&quot;], info[&quot;reference&quot;][&quot;area_m2&quot;])</code></pre>
+<p><code>plan</code> writes the cleaned STL under the output folder and does not call <code>blockMesh</code>. <code>run(cfg)</code> is the full solve and needs <code>simpleFoam</code> on <code>PATH</code>. The shell wrappers are what search for an install or start Docker.</p>
+<p>A sweep from Python is <code>sweep(cfg, [0, 2, 4, 6])</code>. It calls <code>run</code> once per angle and writes <code>polar.csv</code>. With <code>print_only=True</code> it only prints each condition. The field list, CSV columns, and <code>RunResult</code> are in the <a href="api.html#sweep">API</a>.</p>
+</main>
+</div>
+</body>
+</html>

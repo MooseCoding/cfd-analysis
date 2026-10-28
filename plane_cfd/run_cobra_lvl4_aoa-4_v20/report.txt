@@ -1,0 +1,66 @@
+================================ RESULTS ================================
+  geometry     : cobra
+  profile      : plane
+  solver       : simpleFoam
+  AoA          : -4.0 deg
+  speed        : 20.0 m/s
+  altitude     : 0.0 m
+  Mach         : 0.0588
+  Re_MAC       : 260163
+  density      : 1.2249781262066513 kg/m^3     nu = 1.460744677636569e-05 m^2/s
+  wing area    : 0.10648923451070999 m^2        MAC = 0.19001578293275423 m
+  moment center: (0.46616606197516264, 0.0, -0.011404278861028037) m
+  reference    : span-bins
+  turbulence   : Tu = 0.001, k = 0.0006000000000000001, omega = 0.2353560260087579
+  mesh         : level 4, surface 0.007027660846710205 m, layers 0, estimated cells 776832
+  checkMesh    : cells 679794, max non-ortho 61.978, max skew 3.949
+  target y+    : 80.0     predicted y+ : 225.11525083052044
+  scheme       : limitedLinear
+  stop         : iterations
+  iteration cap: 1000
+  progress     : 1000 / 1000 (100.0% of iteration budget)
+                 used the full iteration budget without residual convergence
+  residual targets: p < 1e-05, U < 1e-06, k/omega < 1e-06
+  residual progress: worst Uy at 1285.15x target (need <1.0x to meet criteria)
+------------------------------------------------------------------------
+  coefficients : mean ± sample std dev over the reporting window
+               (iteration scatter, not mesh or experimental uncertainty)
+  window       : iterations 951 to 1000  (50 samples)
+  iterations   : 1000
+  Cl           : -0.18448 ± 0.00177
+  Cd           : 0.08767 ± 0.00008
+  Cs           : 0.00608 ± 0.00042
+  CmPitch      : 0.17549 ± 0.00024
+  CmRoll       : 0.00083 ± 0.00063
+  CmYaw        : 0.01208 ± 0.00048
+  Cl pressure  : -0.18485 ± 0.00178     Cl viscous : 0.00038 ± 7.32e-07
+  Cd pressure  : 0.06558 ± 0.00009     Cd viscous : 0.02210 ± 1.14e-05
+  L/D          : -2.10
+  lift         : -4.8128 N     drag : 2.2873 N
+  pitch moment : 0.86998 N·m
+  per patch    : (same area and moment center, so the parts add to the total)
+    body             Cl -0.18448 ± 0.00177    Cd 0.08767 ± 0.00008
+    sum of patch Cl = -0.18448
+  spanwise Cl  : 40 bins -> spanwise_cl.csv (contributions to the aircraft Cl, Cd)
+------------------------------------------------------------------------
+  y+           : NO   (wall functions want averages 30-300 and minima >= 11)
+    body             min    4.02   max  485.71   avg  171.46
+  last initial residual vs target (ratio = residual/target, <1 meets SIMPLE residualControl):
+    p        1.94e-04 / 1.00e-05   19.43x   over
+    Ux       1.34e-04 / 1.00e-06   134.13x   over
+    Uy       1.29e-03 / 1.00e-06   1285.15x   over
+    Uz       3.01e-04 / 1.00e-06   300.95x   over
+    k        8.94e-05 / 1.00e-06   89.40x   over
+    omega    5.53e-05 / 1.00e-06   55.30x   over
+------------------------------------------------------------------------
+  ParaView     : /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_cobra_lvl4_aoa-4_v20/VTK/run_cobra_lvl4_aoa-4_v20_1000/boundary/body.vtp
+                 Colour the wall patch by Cp.
+                 p is kinematic, and Cp = p / (0.5 U^2) is already a field.
+  this run     : /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_cobra_lvl4_aoa-4_v20/summary.json
+                 /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_cobra_lvl4_aoa-4_v20/report.txt
+                 /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_cobra_lvl4_aoa-4_v20/results.csv  (Cl, Cd, ... = mean; sigma_* = sample std dev)
+                 /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_cobra_lvl4_aoa-4_v20/history.csv
+                 /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_cobra_lvl4_aoa-4_v20/history.svg
+                 /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_cobra_lvl4_aoa-4_v20/spanwise_cl.csv
+  all runs     : /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/results.csv
+=========================================================================

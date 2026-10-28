@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mesh</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<a class="brand" href="index.html">External-flow CFD</a>
+<nav>
+<a href="index.html">Guide</a>
+<a href="tutorial.html">Tutorial</a>
+<a href="concepts.html">Concepts</a>
+<a href="mesh.html" class="active">Mesh</a>
+<a href="troubleshooting.html">Troubleshoot</a>
+<a href="pipeline.html">Pipeline</a>
+<a href="api.html">API</a>
+</nav>
+</header>
+<div class="layout">
+<nav class="toc">
+<p class="toc-label">Contents</p>
+<a href="#what-the-mesh-is">What the mesh is</a>
+<a href="#domain">Domain</a>
+<a href="#background-size-and-snappy-level">Background size and snappy level</a>
+<a href="#near-body-and-wake-boxes">Near-body and wake boxes</a>
+<a href="#quality-and-the-cell-cap">Quality and the cell cap</a>
+<a href="#wall-functions-and-prism-layers">Wall functions and prism layers</a>
+<a href="#the-y-remesh">The y+ remesh</a>
+<a href="#when-a-mesh-is-reused">When a mesh is reused</a>
+</nav>
+<main>
+<h1 id="mesh">Mesh</h1>
+<p><code>snappyHexMesh</code> cuts one watertight surface named <code>body</code> out of a Cartesian background mesh. Sizing lives in <code>cfd/geom.py</code> (<code>prepare</code>) and the dictionaries in <code>cfd/mesh.py</code>. The flight-condition print shows the level, the predicted y+, and the cell estimate before any OpenFOAM binary runs. See also <a href="concepts.html#wall-spacing">Concepts</a> for the y+ band those sizes are aiming at.</p>
+<h2 id="what-the-mesh-is">What the mesh is</h2>
+<p><code>blockMesh</code> builds the far-field box. Every face of that box is the patch <code>farfield</code>. <code>snappyHexMesh</code> refines toward the STL, snaps the surface, and optionally adds prism layers. The wall patch matches <code>body.*</code>, so a multi-solid STL becomes <code>body</code>, <code>body_wing</code>, and similar names.</p>
+<p>Feature edges come from <code>surfaceFeatureExtract</code> with an included angle of 150°. The surface refinement level is the same on the minimum and the maximum, so the whole body is refined to one level rather than a coarse/fine pair.</p>
+<h2 id="domain">Domain</h2>
+<p><code>D</code> is the longest side of the cleaned surface bounding box. The background cell size is <code>dx = D / 8</code>.</p>
+<p>The box starts at 3 <code>D</code> upstream of the nose and 6 <code>D</code> downstream of the tail. The side and vertical extents are 3 <code>D</code> past the body. The box is then stretched so each edge is an integer number of <code>dx</code> cells. <code>--print</code> does not list these corners; they are the <code>x0</code>…<code>z1</code> values inside the <code>setup</code> dict returned by <a href="api.html#planning-without-openfoam">plan</a>.</p>
+<h2 id="background-size-and-snappy-level">Background size and snappy level</h2>
+<p>Each snappy level halves the background cell. The surface spacing is <code>dx / 2^level</code>.</p>
+<div class="table-wrap"><table><thead><tr><th><code>QUALITY</code></th><th>Level</th></tr></thead><tbody><tr><td><code>coarse</code></td><td>3</td></tr><tr><td><code>medium</code></td><td>4</td></tr><tr><td><code>fine</code></td><td>5</td></tr><tr><td><code>vfine</code></td><td>6</td></tr></tbody></table></div>
+<p>An empty <code>QUALITY</code> chooses a level from the y+ target. The flat-plate skin friction used for that estimate is <code>Cf = 0.026 / Re^(1/7)</code>, with Reynolds number <code>U Lref / ν</code>. Friction velocity is <code>U sqrt(Cf / 2)</code>, and the wall distance for the target y+ is <code>TARGET_YPLUS * ν / u_tau</code>. The automatic level is the smallest level whose surface spacing is near twice that wall distance, then it is capped so the cell estimate stays under <code>CELLCAP</code>.</p>
+<p>The cell estimate is a budget, not a <code>checkMesh</code> count: background cells times <code>1 + 0.15 * 4^(level-2)</code> when the level is above 2. <code>checkMesh</code> writes the real cell count into <code>summary.json</code>.</p>
+<h2 id="near-body-and-wake-boxes">Near-body and wake boxes</h2>
+<p>Two searchable boxes add extra refinement inside the far-field mesh. Lengths are fractions of <code>D</code>, measured from the body bounding box.</p>
+<div class="table-wrap"><table><thead><tr><th>Box</th><th>Level</th><th>Extent</th></tr></thead><tbody><tr><td><code>refNear</code></td><td>one below the surface level</td><td>0.1 <code>D</code> ahead and to the side, 0.3 <code>D</code> downstream, 0.23 <code>D</code> vertically</td></tr><tr><td><code>refWake</code></td><td>two below the surface level</td><td>0.3 <code>D</code> ahead, 1.5 <code>D</code> downstream, 0.25 <code>D</code> to the side, 0.4 <code>D</code> vertically</td></tr></tbody></table></div>
+<p>The level is at least 1. These boxes are not config keys. Changing them means editing <code>prepare</code> in <code>cfd/geom.py</code>.</p>
+<p><code>locationInMesh</code> is a point the driver finds outside the body and inside the box, which is where snappy keeps the fluid.</p>
+<h2 id="quality-and-the-cell-cap">Quality and the cell cap</h2>
+<p><code>MAX_COMPUTE</code> sets the default cell cap and, for <code>light</code>, the MPI rank count.</p>
+<div class="table-wrap"><table><thead><tr><th>Level</th><th>Cell cap</th><th>Ranks</th></tr></thead><tbody><tr><td><code>light</code></td><td>1M</td><td>2</td></tr><tr><td><code>medium</code></td><td>4M</td><td>all cores</td></tr><tr><td><code>heavy</code></td><td>16M</td><td>all cores</td></tr></tbody></table></div>
+<p><code>CELLCAP</code> or <code>-n</code> overrides that one quantity. <code>snappyHexMesh</code> also has its own <code>maxGlobalCells</code> of 8,000,000 in the dictionary; the driver's estimate is what <code>--print</code> compares with the cap.</p>
+<p>When the cap binds, <code>--print</code> says the wall spacing is coarser than the y+ target. <code>report.txt</code> repeats that with <code>cell cap is binding</code>.</p>
+<p><code>--smoke</code> forces <code>QUALITY=coarse</code>, which is level 3, and ignores the automatic y+ level for that run.</p>
+<h2 id="wall-functions-and-prism-layers">Wall functions and prism layers</h2>
+<p><code>LAYERS=0</code> leaves a single cell at the wall and expects y+ in the wall-function band (average about 30–300, minimum at least 11).</p>
+<p><code>LAYERS</code> greater than 0 asks snappy for that many layers on <code>body.*</code>. The first layer thickness is <code>TARGET_YPLUS * ν / u_tau</code>, the expansion ratio is 1.2, and the minimum thickness is one fifth of the first layer. With layers on, the preview prints a predicted y+ of 80. The layer thickness itself still follows <code>TARGET_YPLUS</code>.</p>
+<p>Mesh quality limits written into the dictionary include max non-orthogonality 65° (75° on the relaxed pass) and max skewness 4.</p>
+<h2 id="the-y-remesh">The y+ remesh</h2>
+<p>After a solve with automatic quality and <code>LAYERS=0</code>, the driver reads <code>yPlus</code> on the wall. If the average is outside the band, it shifts the level by <code>round(log2(average / 80))</code>, stays inside the levels the cell cap allows, and remeshes once. A second solve uses that mesh. <code>report.txt</code> records the first level and the level that was kept.</p>
+<p>A named <code>QUALITY</code>, a prism-layer mesh, an interrupted solve, or a shift that the cap will not allow does not remesh. The y+ table in <code>report.txt</code> is still the check to read.</p>
+<h2 id="when-a-mesh-is-reused">When a mesh is reused</h2>
+<p>The mesh folder is <code>mesh_&lt;name&gt;_lvl&lt;L&gt;_lay&lt;N&gt;/</code>. It is reused when a previous <code>checkMesh</code> log contains <code>Mesh OK</code> and the geometry name, level, and layer count are unchanged. Angle of attack is not part of that name, which is why an <a href="tutorial.html#angle-sweep">angle sweep</a> builds one mesh.</p>
+<p>A built-in rocket name includes a short hash of the shape, so editing <code>BODY_D</code>, the nose, or the fins starts a new mesh. <code>-m</code> deletes the cached mesh and builds it again. Changing speed or altitude can change the automatic level, which is also a new folder.</p>
+</main>
+</div>
+</body>
+</html>

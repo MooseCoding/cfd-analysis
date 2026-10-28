@@ -1,0 +1,82 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2512                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _87ed40d256-20251219 OPENFOAM=2512 version=v2512
+Arch   : "LSB;label=32;scalar=64"
+Exec   : surfaceFeatureExtract
+Date   : Oct 24 2026
+Time   : 02:23:56
+Host   : MooseCodings-MacBook-Pro.local
+PID    : 86462
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+I/O    : uncollated
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+Case   : /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/mesh_builtin3ft_lvl3_lay0
+nProcs : 1
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+memory pool : not available
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+
+Note: Feature line extraction only valid on closed manifold surfaces
+
+Reading surfaceFeatureExtractDict
+
+Surfaces     : body.stl
+Output       : body
+Load options : offset
+Write options: writeObj=no writeVTK=off
+
+Statistics:
+Triangles    : 6602 in 4 region(s)
+Vertices     : 3309
+Bounding Box : (0 -0.4572 -0.045) (0.7 0.4572 0.13)
+
+Constructing feature set from included angle 150
+Selecting edges based purely on geometric tests: no
+Removing all non-manifold edges (edges with > 2 connected faces) unless they cross multiple regions
+
+Initial Feature set:
+    points : 16
+    edges  : 536
+    of which
+        region edges   : 0
+        external edges : 536
+        internal edges : 0
+
+Final Feature set:
+    points : 528
+    of which
+        convex             : 16
+        concave            : 0
+        mixed              : 0
+        non-feature        : 512
+    edges  : 536
+    of which
+        external edges     : 536
+        internal edges     : 0
+        flat edges         : 0
+        open edges         : 0
+        multiply connected : 0
+
+Writing extendedFeatureEdgeMesh to "/Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/mesh_builtin3ft_lvl3_lay0/constant/extendedFeatureEdgeMesh/body.extendedFeatureEdgeMesh"
+
+Writing featureEdgeMesh to "/Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/mesh_builtin3ft_lvl3_lay0/constant/triSurface/body.eMesh"
+ExecutionTime = 0 s  ClockTime = 0 s
+
+End
+

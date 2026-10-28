@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="468" viewBox="0 0 720 468">
+<desc>aoa_deg,Cl,Cd,L_over_D,status,mach,yplus_pass,run
+-4,-1.844750e-01,8.767300e-02,-2.104138e+00,stopped,0.0588,no,run_cobra_lvl4_aoa-4_v20
+-2,1.182400e-02,7.015500e-02,1.685390e-01,stopped,0.0588,no,run_cobra_lvl4_aoa-2_v20
+0,2.172520e-01,6.446200e-02,3.370229e+00,stopped,0.0588,no,run_cobra_lvl4_aoa0_v20
+2,4.186890e-01,6.845000e-02,6.116682e+00,stopped,0.0588,no,run_cobra_lvl4_aoa2_v20
+4,6.051760e-01,8.094700e-02,7.476157e+00,stopped,0.0588,no,run_cobra_lvl4_aoa4_v20
+6,6.690610e-01,1.068660e-01,6.260760e+00,stopped,0.0588,no,run_cobra_lvl4_aoa6_v20
+8,7.247230e-01,1.389240e-01,5.216691e+00,stopped,0.0588,no,run_cobra_lvl4_aoa8_v20
+10,7.806320e-01,1.751660e-01,4.456521e+00,stopped,0.0588,no,run_cobra_lvl4_aoa10_v20
+</desc>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="68" y="30" font-family="sans-serif" font-size="14" fill="#1a1a1a">Lift and drag versus angle</text>
+<rect x="68" y="42" width="634" height="150" fill="#f6f5f2" stroke="#e3e0d8"/>
+<line x1="68" y1="192.0" x2="702" y2="192.0" stroke="#e3e0d8"/>
+<line x1="68" y1="154.5" x2="702" y2="154.5" stroke="#e3e0d8"/>
+<line x1="68" y1="117.0" x2="702" y2="117.0" stroke="#e3e0d8"/>
+<line x1="68" y1="79.5" x2="702" y2="79.5" stroke="#e3e0d8"/>
+<line x1="68" y1="42.0" x2="702" y2="42.0" stroke="#e3e0d8"/>
+<polyline fill="none" stroke="#1d4e89" stroke-width="2" points="111.72,181.66 189.80,155.35 267.88,127.83 345.96,100.84 424.04,75.85 502.12,67.29 580.20,59.84 658.28,52.34"/>
+<text x="76" y="58" font-family="sans-serif" font-size="12" fill="#1d4e89">Cl</text>
+<text x="68" y="220" font-family="sans-serif" font-size="12" fill="#5e5a54">angle of attack, deg</text>
+<text x="14" y="121" font-family="sans-serif" font-size="12" fill="#5e5a54" transform="rotate(-90 14 117)">Cl</text>
+<text x="68" y="270" font-family="sans-serif" font-size="14" fill="#1a1a1a">Drag versus angle</text>
+<rect x="68" y="282" width="634" height="150" fill="#f6f5f2" stroke="#e3e0d8"/>
+<line x1="68" y1="432.0" x2="702" y2="432.0" stroke="#e3e0d8"/>
+<line x1="68" y1="394.5" x2="702" y2="394.5" stroke="#e3e0d8"/>
+<line x1="68" y1="357.0" x2="702" y2="357.0" stroke="#e3e0d8"/>
+<line x1="68" y1="319.5" x2="702" y2="319.5" stroke="#e3e0d8"/>
+<line x1="68" y1="282.0" x2="702" y2="282.0" stroke="#e3e0d8"/>
+<polyline fill="none" stroke="#1d4e89" stroke-width="2" points="111.72,394.54 189.80,415.01 267.88,421.66 345.96,417.00 424.04,402.40 502.12,372.12 580.20,334.68 658.28,292.34"/>
+<text x="76" y="298" font-family="sans-serif" font-size="12" fill="#1d4e89">Cd</text>
+<text x="68" y="460" font-family="sans-serif" font-size="12" fill="#5e5a54">angle of attack, deg</text>
+<text x="14" y="361" font-family="sans-serif" font-size="12" fill="#5e5a54" transform="rotate(-90 14 357)">Cd</text>
+</svg>

@@ -1,0 +1,6 @@
+{
+  "file-series-version" : "1.0",
+  "files" : [
+    { "name" : "run_cobra_lvl4_aoa6_v20_1000.vtm", "time" : 1000 }
+  ]
+}

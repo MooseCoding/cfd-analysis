@@ -1,0 +1,7 @@
+plane_cfd/
+rocket_cfd/
+body_cfd/
+mason/
+*.bak
+*.bak.*
+EOF

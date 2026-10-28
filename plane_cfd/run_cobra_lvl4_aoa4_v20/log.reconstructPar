@@ -1,0 +1,71 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2512                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _87ed40d256-20251219 OPENFOAM=2512 version=v2512
+Arch   : "LSB;label=32;scalar=64"
+Exec   : reconstructPar -latestTime
+Date   : Oct 28 2026
+Time   : 03:07:56
+Host   : MooseCodings-MacBook-Pro.local
+PID    : 92032
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+I/O    : uncollated
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+Case   : /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_cobra_lvl4_aoa4_v20
+nProcs : 1
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+memory pool : not available
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+
+
+Reconstructing fields
+region=region0
+
+Time = 1000
+
+Reconstructing FV fields
+
+    Reconstructing volScalarFields
+
+        Cp
+        k
+        nut
+        omega
+        p
+        yPlus
+
+    Reconstructing volVectorFields
+
+        U
+        wallShearStress
+
+    Reconstructing surfaceScalarFields
+
+        phi
+
+Reconstructing point fields
+
+No point fields
+
+No lagrangian fields
+
+No finite-area fields
+
+
+End
+

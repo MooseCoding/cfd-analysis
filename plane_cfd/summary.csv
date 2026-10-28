@@ -1,0 +1,2 @@
+geometry,profile,status,aoa_deg,yaw_deg,speed_m_s,mach,Cl,Cd,L_over_D,lift_N,drag_N,yplus_pass,iterations,cells,surface
+builtin3ft,plane,stopped,4.0,10.0,20.0,0.0588,0.38978,0.07513,5.188097,12.998515,2.50545,no,80,274279,VTK/run_builtin3ft_lvl3_aoa4_yaw10_v20_0/boundary/body_fin.vtp

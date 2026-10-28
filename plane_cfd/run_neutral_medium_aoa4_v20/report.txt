@@ -1,0 +1,48 @@
+================================ RESULTS ================================
+  geometry     : neutral
+  AoA          : 4 deg
+  speed        : 20 m/s
+  Mach         : 0.058
+  Re_MAC       : 200000
+  density      : 1.225 kg/m^3     nu = 1.46e-5 m^2/s
+  wing area    : 0.106 m^2        MAC = 0.19 m
+  moment center: (0.466, 0, 0) m
+  reference    : span-bins
+  turbulence   : Tu = nan, k = nan, omega = nan
+  mesh         : level nan, surface nan m, layers nan, estimated cells nan
+  checkMesh    : cells 679871, max non-ortho 62.732, max skew 3.684
+  target y+    : nan     predicted y+ : nan
+  scheme       : limitedLinear
+  stop         : residuals
+------------------------------------------------------------------------
+  sigma is the sample standard deviation on the converged window.
+  It is iteration scatter, not the error from the mesh.
+  window       : iterations 90 to 139  (50 samples)
+  iterations   : 139
+  Cl           : 0.47228 ± 1.50e-05
+  Cd           : 0.06289 ± 1.14e-06
+  Cs           : 0.00454 ± 7.57e-06
+  CmPitch      : -0.69400 ± 1.18e-05
+  CmRoll       : 0.00481 ± 2.93e-05
+  CmYaw        : 0.01639 ± 1.55e-05
+  Cl pressure  : n/a     Cl viscous : n/a
+  Cd pressure  : n/a     Cd viscous : n/a
+  L/D          : 7.51
+  lift         : 12.2652 N     drag : 1.6333 N
+  pitch moment : -3.42442 N·m
+  spanwise Cl  : no bin file (see postProcessing/spanLoad)
+------------------------------------------------------------------------
+  y+           : NO   (wall functions want averages 30-300 and minima >= 11)
+    plane            min    5.80   max  486.09   avg  185.22
+  last initial residual : p 3.28e-06  Ux 6.18e-06  Uy 9.98e-06  Uz 2.00e-06  k 3.39e-07  omega 9.58e-08
+------------------------------------------------------------------------
+  ParaView     : plane_cfd/run_neutral_medium_aoa4_v20/case.foam
+                 Colour the plane patches by Cp. Cut the volume on U.
+                 yPlus and wallShearStress are on the patches.
+                 p is kinematic, and Cp = p / (0.5 U^2) is already a field.
+  VTK          : plane_cfd/run_neutral_medium_aoa4_v20/VTK
+  this run     : plane_cfd/run_neutral_medium_aoa4_v20/report.txt
+                 plane_cfd/run_neutral_medium_aoa4_v20/results.csv
+                 plane_cfd/run_neutral_medium_aoa4_v20/spanwise_cl.csv
+  all runs     : /tmp/results.csv
+=========================================================================

@@ -1,0 +1,50 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2512                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _87ed40d256-20251219 OPENFOAM=2512 version=v2512
+Arch   : "LSB;label=32;scalar=64"
+Exec   : foamToVTK -latestTime
+Date   : Oct 28 2026
+Time   : 19:48:00
+Host   : MooseCodings-MacBook-Pro.local
+PID    : 12394
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+I/O    : uncollated
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+Case   : /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_builtin3ft_lvl3_aoa4_yaw10_v20
+nProcs : 1
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+memory pool : not available
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Initial memory 0 kB
+Create mesh for time = 0
+
+VTK mesh topology: 0.24 s, 0 kB
+Time: 0
+    volScalar    : k nut omega p
+    volVector    : U
+    Internal  : "VTK/run_builtin3ft_lvl3_aoa4_yaw10_v20_0/internal.vtu"
+    Boundary  : "VTK/run_builtin3ft_lvl3_aoa4_yaw10_v20_0/boundary/farfield.vtp"
+    Boundary  : "VTK/run_builtin3ft_lvl3_aoa4_yaw10_v20_0/boundary/body_fuselage.vtp"
+    Boundary  : "VTK/run_builtin3ft_lvl3_aoa4_yaw10_v20_0/boundary/body_wing.vtp"
+    Boundary  : "VTK/run_builtin3ft_lvl3_aoa4_yaw10_v20_0/boundary/body_htail.vtp"
+    Boundary  : "VTK/run_builtin3ft_lvl3_aoa4_yaw10_v20_0/boundary/body_fin.vtp"
+Wrote in 0.36 s, 0 kB
+
+End: 0.6 s, 0 kB (peak)
+

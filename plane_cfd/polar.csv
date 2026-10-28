@@ -1,0 +1,9 @@
+aoa_deg,Cl,Cd,L_over_D,status,mach,yplus_pass,run
+-4,-1.844750e-01,8.767300e-02,-2.104138e+00,stopped,0.0588,no,run_cobra_lvl4_aoa-4_v20
+-2,1.182400e-02,7.015500e-02,1.685390e-01,stopped,0.0588,no,run_cobra_lvl4_aoa-2_v20
+0,2.172520e-01,6.446200e-02,3.370229e+00,stopped,0.0588,no,run_cobra_lvl4_aoa0_v20
+2,4.186890e-01,6.845000e-02,6.116682e+00,stopped,0.0588,no,run_cobra_lvl4_aoa2_v20
+4,6.051760e-01,8.094700e-02,7.476157e+00,stopped,0.0588,no,run_cobra_lvl4_aoa4_v20
+6,6.690610e-01,1.068660e-01,6.260760e+00,stopped,0.0588,no,run_cobra_lvl4_aoa6_v20
+8,7.247230e-01,1.389240e-01,5.216691e+00,stopped,0.0588,no,run_cobra_lvl4_aoa8_v20
+10,7.806320e-01,1.751660e-01,4.456521e+00,stopped,0.0588,no,run_cobra_lvl4_aoa10_v20

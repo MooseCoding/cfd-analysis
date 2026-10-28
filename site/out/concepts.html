@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concepts</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<a class="brand" href="index.html">External-flow CFD</a>
+<nav>
+<a href="index.html">Guide</a>
+<a href="tutorial.html">Tutorial</a>
+<a href="concepts.html" class="active">Concepts</a>
+<a href="mesh.html">Mesh</a>
+<a href="troubleshooting.html">Troubleshoot</a>
+<a href="pipeline.html">Pipeline</a>
+<a href="api.html">API</a>
+</nav>
+</header>
+<div class="layout">
+<nav class="toc">
+<p class="toc-label">Contents</p>
+<a href="#axes">Axes</a>
+<a href="#atmosphere">Atmosphere</a>
+<a href="#mach-number-and-the-solver">Mach number and the solver</a>
+<a href="#coefficients">Coefficients</a>
+<a href="#rocket-axes">Rocket axes</a>
+<a href="#a-worked-rocket-number">A worked rocket number</a>
+<a href="#pressure-coefficient">Pressure coefficient</a>
+<a href="#wall-spacing">Wall spacing</a>
+<a href="#what-the-scatter-means">What the scatter means</a>
+</nav>
+<main>
+<h1 id="concepts">Concepts</h1>
+<p>How the driver turns a speed, an angle, and a body into the numbers in <code>summary.json</code>. The implementation is <code>cfd/aero.py</code> and the force objects in <code>cfd/case.py</code>. A run that uses these definitions is in the <a href="tutorial.html#read-the-numbers">tutorial</a>.</p>
+<h2 id="axes">Axes</h2>
+<p><strong>+x</strong> is nose to tail, <strong>+y</strong> is to the side, and <strong>+z</strong> is up. Freestream is +x before angle of attack is applied. A positive angle raises the freestream in +z: the x-component is <code>U cos α</code> and the z-component is <code>U sin α</code>.</p>
+<p>Lift is perpendicular to that freestream, in the x-z plane. Drag is parallel to the freestream. Side force is along +y. There is no sideslip angle in this driver.</p>
+<h2 id="atmosphere">Atmosphere</h2>
+<p>Altitude is <code>ALT_M</code>, from 0 to 11 km. <code>isa()</code> uses the troposphere lapse: temperature falls at 0.0065 K/m from 288.15 K, pressure follows the hydrostatic relation with gas constant 287.058 J/kg/K, and viscosity is Sutherland's law. Density is <code>p / (R T)</code>. The speed of sound is <code>sqrt(1.4 R T)</code>.</p>
+<p>At sea level that is 288.15 K, 101325 Pa, about 1.225 kg/m³, and about 340.3 m/s. A freestream of 20 m/s is Mach 0.0588. Those values are what <code>--print</code> reports as <code>rho</code>, <code>nu</code>, <code>T</code>, and <code>p</code>.</p>
+<h2 id="mach-number-and-the-solver">Mach number and the solver</h2>
+<p>Mach is freestream speed divided by the speed of sound at <code>ALT_M</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>Mach</th><th>What runs</th></tr></thead><tbody><tr><td>≤ 0.3</td><td><code>simpleFoam</code>. Pressure is kinematic (<code>p/ρ</code>).</td></tr><tr><td>&gt; 0.3</td><td><code>rhoSimpleFoam</code>. Perfect gas, Sutherland viscosity, absolute pressure and temperature.</td></tr><tr><td>≥ 0.7</td><td>The same compressible solver with <code>transonic yes</code>.</td></tr><tr><td>≥ 1</td><td>The same solver, plus a warning.</td></tr></tbody></table></div>
+<p><code>SOLVER=simple</code> above Mach 0.3 stops the run. <code>SOLVER=rho</code> forces <code>rhoSimpleFoam</code> at any Mach and still turns <code>transonic</code> on from 0.7. <code>SOLVER=auto</code> is the table above.</p>
+<p>At Mach 1 and above, <code>plan()</code> and the flight-condition print warn that steady <code>rhoSimpleFoam</code> often will not settle a bow shock. The run still uses that solver. This driver has no <code>rhoCentralFoam</code> path: that solver is unsteady and CFL-limited, and it does not fit this residual loop. If the bow shock will not settle, the log is the place to look, and <a href="troubleshooting.html#high-mach">Troubleshooting</a> lists what the driver does next.</p>
+<h2 id="coefficients">Coefficients</h2>
+<p>Forces are reduced by dynamic pressure and a reference area:</p>
+<p><code>q = ½ ρ U²</code></p>
+<p><code>Cl = L / (q A)</code> and <code>Cd = D / (q A)</code></p>
+<p><code>L</code> and <code>D</code> are the force components along the lift and drag directions from the angle of attack. Reference area and length depend on the profile:</p>
+<div class="table-wrap"><table><thead><tr><th>Profile</th><th>Area</th><th>Length</th><th>Moment center, if you do not set one</th></tr></thead><tbody><tr><td>Plane</td><td>Wing planform</td><td>Mean aerodynamic chord</td><td>Quarter-chord of that wing</td></tr><tr><td>Rocket</td><td><code>π D² / 4</code></td><td>Diameter</td><td>Mid-length of the body</td></tr><tr><td>Body</td><td>Frontal projection</td><td>Extent along x</td><td>Center of the bounding box</td></tr></tbody></table></div>
+<p><code>L/D</code> is <code>Cl / Cd</code>. Lift and drag in newtons are <code>Cl q A</code> and <code>Cd q A</code>. Pitching moment uses the moment center and the reference length: <code>Cm = M / (q A Lref)</code>.</p>
+<p>The reported Cl and Cd are the mean over a window of iterations. The window starts at the first iteration after which every monitored residual stays under its target, and it includes at least the last 50 iterations when the history is that long. Details of the files are in the <a href="api.html#results-csv-columns">API</a>.</p>
+<h2 id="rocket-axes">Rocket axes</h2>
+<p>Rocket coefficients are also written in body axes. <strong>+x</strong> aft, <strong>+z</strong> up:</p>
+<p><code>CA = Cd cos α − Cl sin α</code></p>
+<p><code>CN = Cd sin α + Cl cos α</code></p>
+<p>CA is axial force, positive aft. CN is normal force, positive up.</p>
+<p>The center of pressure along x is</p>
+<p><code>x_cp = x_cg − Cm Lref / CN</code></p>
+<p>when CN is not about zero. Static margin in calibers is</p>
+<p><code>(x_cp − x_cg) / D</code></p>
+<p>Positive means the center of pressure is aft of the moment center. The moment center is the value in <code>REF_X</code>. If that key is empty, the driver uses mid-length and <code>report.txt</code> says so. Static margin about mid-length is not the static margin about the mass center.</p>
+<h2 id="a-worked-rocket-number">A worked rocket number</h2>
+<p>Take Cd = 0.40, Cl = 0.10, and α = 2°. Then</p>
+<p><code>CA = 0.40 cos 2° − 0.10 sin 2° = 0.39627</code></p>
+<p><code>CN = 0.40 sin 2° + 0.10 cos 2° = 0.11390</code></p>
+<p>With <code>x_cg = 0.50</code> m, <code>Cm = −0.20</code>, and <code>Lref = D = 0.1016</code> m (the shipped diameter):</p>
+<p><code>x_cp = 0.50 − (−0.20)(0.1016) / 0.11390 = 0.6784</code> m</p>
+<p><code>static margin = (0.6784 − 0.50) / 0.1016 = 1.756</code> calibers</p>
+<p>The same functions are <code>body_coeffs</code>, <code>center_of_pressure</code>, and <code>static_margin</code> in <code>cfd/aero.py</code>. The shipped geometry that uses <code>D = 0.1016</code> m is in the <a href="tutorial.html#built-in-rocket">tutorial</a>. Its cross-section is <code>π D² / 4 = 0.008107</code> m².</p>
+<h2 id="pressure-coefficient">Pressure coefficient</h2>
+<p>The solver writes a <code>Cp</code> field when the function object runs.</p>
+<p>Incompressible <code>simpleFoam</code> stores kinematic pressure, and the field is <code>Cp = p / (½ U²)</code>.</p>
+<p>Compressible <code>rhoSimpleFoam</code> stores absolute static pressure, and <code>Cp = (p − p∞) / (½ ρ∞ U²)</code>. <code>p∞</code> and <code>ρ∞</code> are the ISA values at <code>ALT_M</code>, also printed in <code>report.txt</code>.</p>
+<h2 id="wall-spacing">Wall spacing</h2>
+<p><code>LAYERS=0</code> is the wall-function mesh. The k-ω SST wall functions want the average y+ on the wall in about 30–300, and the minimum at least 11. <code>quality.yplus_pass</code> is true when every wall patch meets both. <code>TARGET_YPLUS</code> (default 80) is the spacing the mesh tries to hit.</p>
+<p>Prism layers (<code>LAYERS</code> greater than 0) set a first-layer thickness from that same target. How the level and the layer thickness are chosen is in <a href="mesh.html#wall-functions-and-prism-layers">Mesh</a>.</p>
+<h2 id="what-the-scatter-means">What the scatter means</h2>
+<p><code>report.txt</code> prints coefficients as a mean and a sample standard deviation over the reporting window. In <code>results.csv</code> the mean is <code>Cl</code> and the deviation is <code>sigma_Cl</code> (and the same pairing for Cd and the moments).</p>
+<p>That deviation is the scatter of the coefficient from iteration to iteration inside the window. A small value means the force history was steady at the end of the run. Mesh uncertainty and the difference from a wind-tunnel measurement are separate questions; this file does not estimate them.</p>
+<p><code>--no-scatter</code> prints means only. The <code>sigma_*</code> columns stay in the CSV header and are left blank.</p>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Wavefront OBJ file written 2026-10-28T02:24:21
+o body_normal_3
+
+# points : 2
+# faces  : 1
+# zones  : 1
+#   0  plane  (nFaces: 1)
+
+# <points count="2">
+v 0.50918 -0.346718 -0.0372402
+v 0.5146 -0.364908 -0.0371948
+# </points>
+
+# <faces count="1">
+g plane
+f 2 1 1
+# </faces>

@@ -1,0 +1,78 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2512                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _87ed40d256-20251219 OPENFOAM=2512 version=v2512
+Arch   : "LSB;label=32;scalar=64"
+Exec   : blockMesh
+Date   : Oct 21 2026
+Time   : 20:16:21
+Host   : MooseCodings-MacBook-Pro.local
+PID    : 73325
+I/O    : uncollated
+Case   : /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/mesh_builtin3ft_medium_L0
+nProcs : 1
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+memory pool : not available
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Creating block mesh from "system/blockMeshDict"
+--> FOAM IOWarning :
+    Found [v1012] 'convertToMeters' entry instead of 'scale' in dictionary "system/blockMeshDict"
+
+    This keyword is 180 months old.
+
+Creating block edges
+No non-planar block faces defined
+Creating topology blocks
+
+Creating topology patches - from boundary section
+
+Creating block mesh topology
+
+Check topology
+
+	Basic statistics
+		Number of internal faces : 0
+		Number of boundary faces : 6
+		Number of defined boundary faces : 6
+		Number of undefined boundary faces : 0
+	Checking patch -> block consistency
+
+Creating block offsets
+Creating merge list (topological search)...
+
+Creating polyMesh from blockMesh
+Creating points with scale (1 1 1)
+    Block 0 cell size :
+        i : 0.1143 .. 0.1143
+        j : 0.1143 .. 0.1143
+        k : 0.1143 .. 0.1143
+
+Creating cells
+Creating patches
+No patch pairs to merge
+
+Writing polyMesh with 0 cellZones
+----------------
+Mesh Information
+----------------
+  boundingBox: (-2.7432 -3.2004 -2.7882) (6.2865 3.2004 2.9268)
+  nPoints: 232560
+  nCells: 221200
+  nFaces: 674774
+  nInternalFaces: 652426
+----------------
+Patches
+----------------
+  patch 0 (start: 652426 size: 22348) name: farfield
+
+End
+

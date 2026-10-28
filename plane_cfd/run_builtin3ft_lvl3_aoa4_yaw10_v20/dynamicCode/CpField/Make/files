@@ -1,0 +1,6 @@
+/* dynamicCode:
+ * SHA1 = 16957f924f4ce33b0da077f1841e9d6dd19bd893
+ */
+functionObjectTemplate.C
+
+LIB = $(PWD)/../platforms/$(WM_OPTIONS)/lib/libCpField_16957f924f4ce33b0da077f1841e9d6dd19bd893

@@ -1,0 +1,104 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2512                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      binary;
+    arch        "LSB;label=32;scalar=64";
+    class       volScalarField;
+    location    "0";
+    object      omega;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 -1 0 0 0 0];
+
+internalField   uniform 0.23535603;
+
+boundaryField
+{
+    farfield
+    {
+        type            freestream;
+        freestreamValue uniform 0.23535603;
+        value           uniform 0.23535603;
+    }
+    body
+    {
+        type            omegaWallFunction;
+        value           nonuniform List<scalar> 0;
+    }
+    procBoundary0to1
+    {
+        type            processor;
+        value           uniform 0.23535603;
+    }
+    procBoundary0to2
+    {
+        type            processor;
+        value           uniform 0.23535603;
+    }
+    procBoundary0to3
+    {
+        type            processor;
+        value           uniform 0.23535603;
+    }
+    procBoundary0to4
+    {
+        type            processor;
+        value           uniform 0.23535603;
+    }
+    procBoundary0to5
+    {
+        type            processor;
+        value           uniform 0.23535603;
+    }
+    procBoundary0to6
+    {
+        type            processor;
+        value           uniform 0.23535603;
+    }
+    procBoundary0to7
+    {
+        type            processor;
+        value           uniform 0.23535603;
+    }
+    procBoundary0to8
+    {
+        type            processor;
+        value           uniform 0.23535603;
+    }
+    procBoundary0to9
+    {
+        type            processor;
+        value           uniform 0.23535603;
+    }
+    procBoundary0to11
+    {
+        type            processor;
+        value           uniform 0.23535603;
+    }
+    procBoundary0to12
+    {
+        type            processor;
+        value           uniform 0.23535603;
+    }
+    procBoundary0to13
+    {
+        type            processor;
+        value           uniform 0.23535603;
+    }
+    procBoundary0to14
+    {
+        type            processor;
+        value           uniform 0.23535603;
+    }
+}
+
+
+// ************************************************************************* //

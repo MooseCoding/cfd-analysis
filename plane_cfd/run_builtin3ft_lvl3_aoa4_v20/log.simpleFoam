@@ -1,0 +1,254 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2512                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _87ed40d256-20251219 OPENFOAM=2512 version=v2512
+Arch   : "LSB;label=32;scalar=64"
+Exec   : simpleFoam
+Date   : Oct 28 2026
+Time   : 02:22:38
+Host   : MooseCodings-MacBook-Pro.local
+PID    : 89073
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+I/O    : uncollated
+--> FOAM Warning : 
+    From Foam::fileName Foam::cwd_L()
+    in file POSIX.C at line 554
+    PWD is not the cwd() - reverting to physical description
+Case   : /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_builtin3ft_lvl3_aoa4_v20
+nProcs : 1
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+memory pool : not available
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0
+
+
+SIMPLE: convergence criteria
+    field p	 tolerance 1e-05
+    field U	 tolerance 1e-06
+    field "(k|omega)"	 tolerance 1e-06
+
+Reading field p
+
+Reading field U
+
+Reading/calculating face flux field phi
+
+Selecting incompressible transport model Newtonian
+Selecting turbulence model type RAS
+Selecting RAS turbulence model kOmegaSST
+Selecting patchDistMethod meshWave
+RAS
+{
+    model           kOmegaSST;
+    RASModel        kOmegaSST;
+    turbulence      on;
+    printCoeffs     on;
+    alphaK1         0.85;
+    alphaK2         1;
+    alphaOmega1     0.5;
+    alphaOmega2     0.856;
+    gamma1          0.55555556;
+    gamma2          0.44;
+    beta1           0.075;
+    beta2           0.0828;
+    betaStar        0.09;
+    a1              0.31;
+    b1              1;
+    c1              10;
+    F3              false;
+    decayControl    false;
+    kInf            0;
+    omegaInf        0;
+}
+
+No MRF models present
+
+No finite volume options present
+
+Starting time loop
+
+forceCoeffs forceCoeffs1:
+    rho: rhoInf
+    Freestream density (rhoInf) set to 1.2249781
+    Not including porosity effects
+    magUInf: 20
+    lRef   : 0.15582288
+    Aref   : 0.13611811
+    rhoInf : 1.2249781
+    Selecting all coefficients
+    - Drag force: Cd
+    - Drag force front: Cd(f)
+    - Drag force rear: Cd(r)
+    - Lift force: Cl
+    - Lift force front: Cl(f)
+    - Lift force rear: Cl(r)
+    - Pitch moment: CmPitch
+    - Roll moment: CmRoll
+    - Yaw moment: CmYaw
+    - Side force: Cs
+    - Side force front: Cs(f)
+    - Side force rear: Cs(r)
+
+
+forces forces1:
+    rho: rhoInf
+    Freestream density (rhoInf) set to 1.2249781
+    Not including porosity effects
+forceCoeffs coeff_body_fuselage:
+    rho: rhoInf
+    Freestream density (rhoInf) set to 1.2249781
+    Not including porosity effects
+    magUInf: 20
+    lRef   : 0.15582288
+    Aref   : 0.13611811
+    rhoInf : 1.2249781
+    Selecting all coefficients
+    - Drag force: Cd
+    - Drag force front: Cd(f)
+    - Drag force rear: Cd(r)
+    - Lift force: Cl
+    - Lift force front: Cl(f)
+    - Lift force rear: Cl(r)
+    - Pitch moment: CmPitch
+    - Roll moment: CmRoll
+    - Yaw moment: CmYaw
+    - Side force: Cs
+    - Side force front: Cs(f)
+    - Side force rear: Cs(r)
+
+
+forceCoeffs coeff_body_wing:
+    rho: rhoInf
+    Freestream density (rhoInf) set to 1.2249781
+    Not including porosity effects
+    magUInf: 20
+    lRef   : 0.15582288
+    Aref   : 0.13611811
+    rhoInf : 1.2249781
+    Selecting all coefficients
+    - Drag force: Cd
+    - Drag force front: Cd(f)
+    - Drag force rear: Cd(r)
+    - Lift force: Cl
+    - Lift force front: Cl(f)
+    - Lift force rear: Cl(r)
+    - Pitch moment: CmPitch
+    - Roll moment: CmRoll
+    - Yaw moment: CmYaw
+    - Side force: Cs
+    - Side force front: Cs(f)
+    - Side force rear: Cs(r)
+
+
+forceCoeffs coeff_body_htail:
+    rho: rhoInf
+    Freestream density (rhoInf) set to 1.2249781
+    Not including porosity effects
+    magUInf: 20
+    lRef   : 0.15582288
+    Aref   : 0.13611811
+    rhoInf : 1.2249781
+    Selecting all coefficients
+    - Drag force: Cd
+    - Drag force front: Cd(f)
+    - Drag force rear: Cd(r)
+    - Lift force: Cl
+    - Lift force front: Cl(f)
+    - Lift force rear: Cl(r)
+    - Pitch moment: CmPitch
+    - Roll moment: CmRoll
+    - Yaw moment: CmYaw
+    - Side force: Cs
+    - Side force front: Cs(f)
+    - Side force rear: Cs(r)
+
+
+forceCoeffs coeff_body_fin:
+    rho: rhoInf
+    Freestream density (rhoInf) set to 1.2249781
+    Not including porosity effects
+    magUInf: 20
+    lRef   : 0.15582288
+    Aref   : 0.13611811
+    rhoInf : 1.2249781
+    Selecting all coefficients
+    - Drag force: Cd
+    - Drag force front: Cd(f)
+    - Drag force rear: Cd(r)
+    - Lift force: Cl
+    - Lift force front: Cl(f)
+    - Lift force rear: Cl(r)
+    - Pitch moment: CmPitch
+    - Roll moment: CmRoll
+    - Yaw moment: CmYaw
+    - Side force: Cs
+    - Side force front: Cs(f)
+    - Side force rear: Cs(r)
+
+
+forces spanForces:
+    rho: rhoInf
+    Freestream density (rhoInf) set to 1.2249781
+    Not including porosity effects
+binField spanLoad:
+    Activating a set of single-direction bins
+    Employing 40 bins
+    - cumulative    : 0
+    - decomposePatchValues    : 0
+    - direction     : (0 1 0)
+
+Using dynamicCode for functionObject codedCp at line 169 in "/Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_builtin3ft_lvl3_aoa4_v20/system/controlDict/functions/codedCp"
+Could not load "/Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_builtin3ft_lvl3_aoa4_v20/dynamicCode/platforms/darwin64ClangDPInt32Opt/lib/libCpField_16957f924f4ce33b0da077f1841e9d6dd19bd893.dylib"
+dlopen(/Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_builtin3ft_lvl3_aoa4_v20/dynamicCode/platforms/darwin64ClangDPInt32Opt/lib/libCpField_16957f924f4ce33b0da077f1841e9d6dd19bd893.dylib, 0x0009): tried: '/Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_builtin3ft_lvl3_aoa4_v20/dynamicCode/platforms/darwin64ClangDPInt32Opt/lib/libCpField_16957f924f4ce33b0da077f1841e9d6dd19bd893.dylib' (no such file), '/System/Volumes/Preboot/Cryptexes/OS/Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_builtin3ft_lvl3_aoa4_v20/dynamicCode/platforms/darwin64ClangDPInt32Opt/lib/libCpField_16957f924f4ce33b0da077f1841e9d6dd19bd893.dylib' (no such file), '/Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_builtin3ft_lvl3_aoa4_v20/dynamicCode/platforms/darwin64ClangDPInt32Opt/lib/libCpField_16957f924f4ce33b0da077f1841e9d6dd19bd893.dylib' (no such file)
+Creating new library in "dynamicCode/CpField/platforms/darwin64ClangDPInt32Opt/lib/libCpField_16957f924f4ce33b0da077f1841e9d6dd19bd893.dylib"
+Invoking wmake libso /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_builtin3ft_lvl3_aoa4_v20/dynamicCode/CpField
+wmake libso /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_builtin3ft_lvl3_aoa4_v20/dynamicCode/CpField
+    ln: ./lnInclude
+    dep: functionObjectTemplate.C
+    Ctoo: functionObjectTemplate.C
+    link: /Users/moosecoding/school/gatech/Freshman/supersonic/Cobra/CFD/openfoam/plane_cfd/run_builtin3ft_lvl3_aoa4_v20/dynamicCode/CpField/../platforms/darwin64ClangDPInt32Opt/lib/libCpField_16957f924f4ce33b0da077f1841e9d6dd19bd893.dylib
+wallShearStress wallShear1:
+    processing (4) wall patches:
+        body_fuselage
+        body_wing
+        body_htail
+        body_fin
+
+Time = 1
+
+smoothSolver:  Solving for Ux, Initial residual = 0.99998377, Final residual = 0.0066912266, No Iterations 13
+smoothSolver:  Solving for Uy, Initial residual = 1, Final residual = 0.0099503401, No Iterations 12
+smoothSolver:  Solving for Uz, Initial residual = 0.9999993, Final residual = 0.0069536279, No Iterations 13
+GAMG:  Solving for p, Initial residual = 1, Final residual = 0.0097316579, No Iterations 7
+GAMG:  Solving for p, Initial residual = 0.022738651, Final residual = 0.00016955192, No Iterations 3
+time step continuity errors : sum local = 1.3981893e-05, global = 3.3345274e-06, cumulative = 3.3345274e-06
+smoothSolver:  Solving for omega, Initial residual = 0.0014657156, Final residual = 7.7926279e-06, No Iterations 6
+bounding omega, min: -176.67014 max: 2620.1706 average: 0.76190406
+smoothSolver:  Solving for k, Initial residual = 1, Final residual = 0.0060716915, No Iterations 5
+ExecutionTime = 1.23 s  ClockTime = 4 s
+
+Time = 2
+
+smoothSolver:  Solving for Ux, Initial residual = 0.34533669, Final residual = 0.0030145292, No Iterations 8
+smoothSolver:  Solving for Uy, Initial residual = 0.49026271, Final residual = 0.0032708594, No Iterations 9
+smoothSolver:  Solving for Uz, Initial residual = 0.18017675, Final residual = 0.0015319162, No Iterations 8
+GAMG:  Solving for p, Initial residual = 0.084947734, Final residual = 0.00052137571, No Iterations 6
+GAMG:  Solving for p, Initial residual = 0.0066663203, Final residual = 6.5644414e-05, No Iterations 3
+time step continuity errors : sum local = 1.7740404e-05, global = 3.7350344e-06, cumulative = 7.0695618e-06
+smoothSolver:  Solving for omega, Initial residual = 0.0017143479, Final residual = 1.1293542e-05, No Iterations 5
+bounding omega, min: -49.890158 max: 2626.1573 average: 0.81237192
+smoothSolver:  Solving for k, Initial residual = 0.18972909, Final residual = 0.00086216791, No Iterations 5
+ExecutionTime = 1.97 s  ClockTime = 5 s
+

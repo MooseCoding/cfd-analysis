@@ -1,0 +1,18 @@
+<?xml version='1.0'?>
+<!-- time='0' -->
+<VTKFile type='vtkMultiBlockDataSet' version='1.0' byte_order='LittleEndian' header_type='UInt64'>
+  <vtkMultiBlockDataSet>
+    <Block name='boundary'>
+      <DataSet name='farfield' file='boundary/farfield.vtp' />
+      <DataSet name='body_fuselage' file='boundary/body_fuselage.vtp' />
+      <DataSet name='body_wing' file='boundary/body_wing.vtp' />
+      <DataSet name='body_htail' file='boundary/body_htail.vtp' />
+      <DataSet name='body_fin' file='boundary/body_fin.vtp' />
+    </Block>
+  </vtkMultiBlockDataSet>
+  <FieldData>
+    <DataArray type='Float32' Name='TimeValue' NumberOfTuples='1' format='ascii'>
+0
+    </DataArray>
+  </FieldData>
+</VTKFile>
